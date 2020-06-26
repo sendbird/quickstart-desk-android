@@ -1,0 +1,401 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <!-- Base application theme. -->
+    <style name="AppTheme" parent="Theme.AppCompat.Light.DarkActionBar">
+        <!-- Customize your theme here. -->
+        <item name="colorPrimary">@color/colorPrimary</item>
+        <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
+        <item name="colorAccent">@color/colorAccent</item>
+        <item name="colorButtonNormal">@color/colorPrimary</item>
+    </style>
+
+    <style name="AppTheme.NoActionBar" parent="AppTheme">
+        <item name="windowActionBar">false</item>
+        <item name="windowNoTitle">true</item>
+        <item name="android:windowFullscreen">false</item>
+    </style>
+
+    <!--<style name="Theme.Desk.Custom" parent="CustomTheme"/>-->
+
+    <!--<style name="CustomTheme" parent="Theme.Desk">-->
+        <!--<item name="deskServiceName">@string/service_name</item>-->
+    <!--</style>-->
+
+
+    <style name="Widget"/>
+
+    <style name="Widget.Desk"/>
+
+    <style name="TextAppearance.Desk" parent="TextAppearance.AppCompat"/>
+
+    <style name="TextAppearance.Desk.Date">
+        <item name="android:textSize">12sp</item>
+        <item name="android:textColor">#6f7c92</item>
+    </style>
+
+    <style name="TextAppearance.Desk.AgentName">
+        <item name="android:textSize">12sp</item>
+        <item name="android:textColor">#6f7c92</item>
+    </style>
+
+    <style name="TextAppearance.Desk.SystemMessage">
+        <item name="android:textSize">16sp</item>
+        <item name="android:textColor">#3a414d</item>
+    </style>
+
+    <style name="TextAppearance.Desk.UserMessage">
+        <item name="android:textSize">16sp</item>
+        <item name="android:textColor">#3a414d</item>
+        <item name="android:textColorLink">#45b5ff</item>
+    </style>
+    <style name="TextAppearance.Desk.UserMessageTime">
+        <item name="android:textSize">12sp</item>
+        <item name="android:textColor">#4e9dc4</item>
+    </style>
+    <style name="Widget.Desk.UserMessageUrlPreviewImage">
+        <item name="deskCornerRadius">6dp</item>
+        <item name="deskBorderWidth">0dp</item>
+        <item name="deskBorderColor">#ffffff</item>
+        <item name="android:scaleType">centerCrop</item>
+        <item name="android:adjustViewBounds">true</item>
+    </style>
+    <style name="TextAppearance.Desk.UserMessageUrlPreviewTitle">
+        <item name="android:textSize">13sp</item>
+        <item name="android:textColor">#424756</item>
+        <item name="android:maxLines">2</item>
+        <item name="android:ellipsize">end</item>
+        <item name="android:paddingLeft">12dp</item>
+        <item name="android:paddingRight">12dp</item>
+        <item name="android:paddingTop">12dp</item>
+    </style>
+    <style name="TextAppearance.Desk.UserMessageUrlPreviewDomainName">
+        <item name="android:textSize">13sp</item>
+        <item name="android:textColor">#777777</item>
+        <item name="android:maxLines">1</item>
+        <item name="android:ellipsize">end</item>
+        <item name="android:paddingLeft">12dp</item>
+        <item name="android:paddingRight">12dp</item>
+        <item name="android:paddingTop">4dp</item>
+        <item name="android:paddingBottom">12dp</item>
+    </style>
+
+    <style name="TextAppearance.Desk.AgentMessage">
+        <item name="android:textSize">16sp</item>
+        <item name="android:textColor">#3a414d</item>
+        <item name="android:textColorLink">#45b5ff</item>
+    </style>
+    <style name="TextAppearance.Desk.AgentMessageTime">
+        <item name="android:textSize">12sp</item>
+        <item name="android:textColor">#92a1b3</item>
+    </style>
+    <style name="Widget.Desk.AgentMessageUrlPreviewImage">
+        <item name="deskCornerRadius">6dp</item>
+        <item name="deskBorderWidth">0dp</item>
+        <item name="deskBorderColor">#ffffff</item>
+        <item name="android:scaleType">centerCrop</item>
+        <item name="android:adjustViewBounds">true</item>
+    </style>
+    <style name="TextAppearance.Desk.AgentMessageUrlPreviewTitle">
+        <item name="android:textSize">13sp</item>
+        <item name="android:textColor">#424756</item>
+        <item name="android:maxLines">2</item>
+        <item name="android:ellipsize">end</item>
+        <item name="android:paddingLeft">12dp</item>
+        <item name="android:paddingRight">12dp</item>
+        <item name="android:paddingTop">12dp</item>
+    </style>
+    <style name="TextAppearance.Desk.AgentMessageUrlPreviewDomainName">
+        <item name="android:textSize">13sp</item>
+        <item name="android:textColor">#777777</item>
+        <item name="android:maxLines">1</item>
+        <item name="android:ellipsize">end</item>
+        <item name="android:paddingLeft">12dp</item>
+        <item name="android:paddingRight">12dp</item>
+        <item name="android:paddingTop">4dp</item>
+        <item name="android:paddingBottom">12dp</item>
+    </style>
+
+    <style name="TextAppearance.Desk.SystemMessageTime">
+        <item name="android:textSize">12sp</item>
+        <item name="android:textColor">#92a1b3</item>
+    </style>
+
+    <style name="TextAppearance.Desk.UserFileMessage">
+        <item name="android:textSize">16sp</item>
+        <item name="android:textColor">#3a414d</item>
+    </style>
+    <style name="TextAppearance.Desk.UserFileMessageTime">
+        <item name="android:textSize">12sp</item>
+        <item name="android:textColor">#4e9dc4</item>
+    </style>
+
+    <style name="TextAppearance.Desk.AgentFileMessage">
+        <item name="android:textSize">16sp</item>
+        <item name="android:textColor">#3a414d</item>
+    </style>
+    <style name="TextAppearance.Desk.AgentFileMessageTime">
+        <item name="android:textSize">12sp</item>
+        <item name="android:textColor">#92a1b3</item>
+    </style>
+
+    <style name="TextAppearance.Desk.ImageTime">
+        <item name="android:textSize">12sp</item>
+        <item name="android:textColor">#ffffff</item>
+        <item name="android:paddingLeft">10dp</item>
+        <item name="android:paddingRight">10dp</item>
+        <item name="android:paddingTop">3dp</item>
+        <item name="android:paddingBottom">3dp</item>
+        <item name="android:background">@drawable/bg_img_time</item>
+    </style>
+
+    <style name="TextAppearance.Desk.Popup">
+        <item name="android:textSize">16sp</item>
+        <item name="android:textColor">#3a414d</item>
+    </style>
+
+    <style name="TextAppearance.Desk.InboxTitle">
+        <item name="android:textSize">18sp</item>
+    </style>
+
+    <style name="TextAppearance.Desk.InquireClosureYes">
+        <item name="android:textSize">12sp</item>
+        <item name="android:textColor">#ffffff</item>
+    </style>
+
+    <style name="TextAppearance.Desk.InquireClosureNo">
+        <item name="android:textSize">12sp</item>
+        <item name="android:textColor">#343840</item>
+    </style>
+
+    <style name="TextAppearance.Desk.InboxTab">
+        <item name="android:textSize">14sp</item>
+        <item name="android:textColor">#beb1ec</item>
+        <item name="android:textStyle">bold</item>
+    </style>
+
+    <style name="TextAppearance.Desk.OpenTicketTitle">
+        <item name="android:textSize">14sp</item>
+        <item name="android:textColor">#6a4cd1</item>
+        <item name="android:ellipsize">end</item>
+    </style>
+
+    <style name="TextAppearance.Desk.OpenTicketLastMessage">
+        <item name="android:textSize">14sp</item>
+        <item name="android:textColor">#8a93a6</item>
+        <item name="android:ellipsize">end</item>
+    </style>
+
+    <style name="TextAppearance.Desk.OpenTicketLastUpdated">
+        <item name="android:textSize">14sp</item>
+        <item name="android:textColor">#8a9ea6</item>
+    </style>
+
+    <style name="TextAppearance.Desk.OpenTicketUnreadCount">
+        <item name="android:layout_width">24dp</item>
+        <item name="android:layout_height">24dp</item>
+        <item name="android:background">@drawable/bg_unread_count</item>
+        <item name="android:gravity">center</item>
+        <item name="android:textSize">14sp</item>
+        <item name="android:textColor">#ffffff</item>
+    </style>
+
+    <style name="TextAppearance.Desk.OpenTicketAgentName">
+        <item name="android:textSize">16sp</item>
+        <item name="android:textColor">#3a414d</item>
+    </style>
+
+    <style name="Widget.Desk.OpenTicketAgentImageView">
+        <item name="android:alpha">1</item>
+    </style>
+
+    <style name="TextAppearance.Desk.ClosedTicketTitle">
+        <item name="android:textSize">14sp</item>
+        <item name="android:textColor">#806a4cd1</item>
+        <item name="android:ellipsize">end</item>
+    </style>
+
+    <style name="TextAppearance.Desk.ClosedTicketLastMessage">
+        <item name="android:textSize">14sp</item>
+        <item name="android:textColor">#808a9ea6</item>
+        <item name="android:ellipsize">end</item>
+    </style>
+
+    <style name="TextAppearance.Desk.ClosedTicketLastUpdated">
+        <item name="android:textSize">14sp</item>
+        <item name="android:textColor">#808a9ea6</item>
+    </style>
+
+    <style name="TextAppearance.Desk.ClosedTicketUnreadCount">
+        <item name="android:layout_width">24dp</item>
+        <item name="android:layout_height">24dp</item>
+        <item name="android:background">@drawable/bg_unread_count</item>
+        <item name="android:gravity">center</item>
+        <item name="android:textSize">14sp</item>
+        <item name="android:textColor">#ffffff</item>
+    </style>
+
+    <style name="TextAppearance.Desk.ClosedTicketAgentName">
+        <item name="android:textSize">16sp</item>
+        <item name="android:textColor">#808f9eb4</item>
+    </style>
+
+    <style name="Widget.Desk.ClosedTicketAgentImageView">
+        <item name="android:alpha">0.5</item>
+    </style>
+
+    <style name="TextAppearance.Desk.EmptyInboxMain">
+        <item name="android:textSize">18sp</item>
+        <item name="android:textColor">#3a414d</item>
+    </style>
+
+    <style name="TextAppearance.Desk.EmptyInboxDetail">
+        <item name="android:textSize">14sp</item>
+        <item name="android:textColor">#b2bed1</item>
+    </style>
+
+    <style name="TextAppearance.Desk.Settings">
+        <item name="android:textSize">18sp</item>
+        <item name="android:textColor">#3a414d</item>
+    </style>
+
+    <style name="TextAppearance.Desk.License">
+        <item name="android:textSize">9sp</item>
+        <item name="android:textColor">#3a414d</item>
+    </style>
+
+    <style name="TextAppearance.Desk.WebTitle">
+        <item name="android:textSize">16sp</item>
+        <item name="android:textColor">#ffffff</item>
+        <item name="android:maxLines">1</item>
+        <item name="android:ellipsize">end</item>
+    </style>
+
+    <style name="TextAppearance.Desk.WebSubTitle">
+        <item name="android:textSize">12sp</item>
+        <item name="android:textColor">#d0bfff</item>
+        <item name="android:maxLines">1</item>
+        <item name="android:ellipsize">end</item>
+    </style>
+
+    <style name="Widget.Desk.Toolbar" parent="Widget.AppCompat.Toolbar">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">?attr/actionBarSize</item>
+        <item name="android:background">?attr/colorPrimary</item>
+        <item name="android:paddingLeft">0dp</item>
+        <item name="android:paddingRight">10dp</item>
+        <item name="contentInsetStartWithNavigation">72dp</item>
+        <item name="contentInsetStart">20dp</item>
+        <item name="titleTextAppearance">@style/TextAppearance.Desk.InboxTitle</item>
+    </style>
+
+    <style name="Widget.Desk.Toolbar.ActionButton" parent="Widget.AppCompat.ActionButton">
+        <item name="android:width">36dp</item>
+        <item name="android:minWidth">0dp</item>
+    </style>
+
+    <style name="Widget.Desk.RoundedImageView">
+        <item name="deskCornerRadius">6dp</item>
+        <item name="deskBorderWidth">2dp</item>
+        <item name="deskBorderColor">#ffffff</item>
+    </style>
+
+    <style name="Widget.Desk.MessageListView" parent="Widget.AppCompat.ListView">
+        <item name="android:dividerHeight">0dp</item>
+        <item name="android:divider">@null</item>
+    </style>
+
+    <style name="Widget.Desk.MessageListViewItem">
+        <item name="android:padding">12dp</item>
+    </style>
+
+    <style name="Widget.Desk.MessageReplyView">
+        <item name="android:background">#ffffff</item>
+        <item name="android:minHeight">48dp</item>
+    </style>
+
+    <style name="Widget.Desk.MessageReplyEditText" parent="Widget.AppCompat.EditText">
+        <item name="android:textSize">16sp</item>
+        <item name="android:textColor">#3a414d</item>
+        <item name="android:textColorHint">#92a1b3</item>
+        <item name="android:maxLines">5</item>
+        <item name="android:hint">Write a message</item>
+        <item name="android:inputType">textMultiLine|textCapSentences</item>
+        <item name="android:background">#00000000</item>
+        <item name="android:paddingLeft">16dp</item>
+        <item name="android:paddingRight">12dp</item>
+        <item name="android:paddingTop">12dp</item>
+        <item name="android:paddingBottom">12dp</item>
+    </style>
+
+    <style name="Widget.Desk.MessageReplyButtonLayout">
+        <item name="android:layout_gravity">right|bottom</item>
+        <item name="android:layout_marginRight">16dp</item>
+        <item name="android:layout_marginBottom">7.5dp</item>
+    </style>
+
+    <style name="Widget.Desk.InboxTabLayout" parent="Widget.Design.TabLayout">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">50dp</item>
+        <item name="android:background">?attr/colorPrimary</item>
+        <item name="tabBackground">?attr/colorPrimary</item>
+        <item name="tabIndicatorColor">#ffffff</item>
+        <item name="tabIndicatorHeight">2dp</item>
+        <item name="tabSelectedTextColor">#ffffff</item>
+        <item name="tabTextAppearance">@style/TextAppearance.Desk.InboxTab</item>
+    </style>
+
+    <style name="Widget.Desk.TicketListView" parent="Widget.AppCompat.ListView">
+        <item name="android:dividerHeight">1dp</item>
+        <item name="android:divider">#e5e5e5</item>
+    </style>
+
+    <style name="Widget.Desk.TicketListViewItem">
+        <item name="android:paddingLeft">16dp</item>
+        <item name="android:paddingRight">16dp</item>
+        <item name="android:paddingTop">14dp</item>
+        <item name="android:paddingBottom">14dp</item>
+    </style>
+
+
+    <style name="ucrop_ImageViewWidgetIcon">
+        <item name="android:layout_width">wrap_content</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:layout_gravity">center</item>
+        <item name="android:scaleType">fitCenter</item>
+        <item name="android:duplicateParentState">true</item>
+    </style>
+
+    <style name="ucrop_WrapperIconState">
+        <item name="android:layout_width">0dp</item>
+        <item name="android:layout_height">match_parent</item>
+        <item name="android:layout_weight">1</item>
+        <item name="android:background">?attr/selectableItemBackground</item>
+        <item name="android:clickable">true</item>
+    </style>
+
+    <style name="ucrop_WrapperRotateButton">
+        <item name="android:layout_width">@dimen/ucrop_size_wrapper_rotate_button</item>
+        <item name="android:layout_height">@dimen/ucrop_size_wrapper_rotate_button</item>
+        <item name="android:background">?attr/selectableItemBackgroundBorderless</item>
+        <item name="android:clickable">true</item>
+    </style>
+
+    <style name="ucrop_TextViewCropAspectRatio">
+        <item name="android:layout_width">wrap_content</item>
+        <item name="android:layout_height">@dimen/ucrop_height_crop_aspect_ratio_text</item>
+        <item name="android:layout_gravity">center</item>
+        <item name="android:duplicateParentState">true</item>
+        <item name="android:textColor">@color/ucrop_scale_text_view_selector</item>
+    </style>
+
+    <style name="ucrop_TextViewWidgetText">
+        <item name="android:layout_width">wrap_content</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:layout_centerHorizontal">true</item>
+        <item name="android:layout_marginTop">@dimen/ucrop_margit_top_widget_text</item>
+        <item name="android:textColor">@color/ucrop_color_widget_text</item>
+        <item name="android:textSize">@dimen/ucrop_text_size_widget_text</item>
+    </style>
+
+</resources>

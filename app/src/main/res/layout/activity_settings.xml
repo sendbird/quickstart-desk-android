@@ -1,0 +1,100 @@
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.design.widget.CoordinatorLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/coordinator_layout"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="?attr/deskInboxBackground">
+
+        <android.support.v7.widget.Toolbar
+            style="?attr/deskToolbarStyle"
+            android:id="@+id/toolbar"
+            android:elevation="4dp"/>
+
+        <LinearLayout
+            android:id="@+id/linear_layout_push_notification"
+            android:layout_width="match_parent"
+            android:layout_height="60dp"
+            android:layout_below="@id/toolbar"
+            android:layout_marginLeft="16dp"
+            android:layout_marginRight="16dp"
+            android:gravity="center_vertical">
+
+            <ImageView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_weight="0"
+                android:background="@drawable/icon_push"
+                android:layout_marginRight="16dp"/>
+
+            <TextView
+                style="?attr/deskSettingsTextAppearance"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="@string/desk_push_notification"/>
+
+            <android.support.v7.widget.SwitchCompat
+                android:id="@+id/switch_push_notification"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_weight="0"
+                app:switchMinWidth="55dp"/>
+
+        </LinearLayout>
+
+        <View
+            android:id="@+id/separator_1"
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:layout_below="@id/linear_layout_push_notification"
+            android:background="#d9d9d9"/>
+
+        <LinearLayout
+            android:id="@+id/linear_layout_license"
+            android:layout_width="match_parent"
+            android:layout_height="60dp"
+            android:layout_below="@id/separator_1"
+            android:layout_marginLeft="16dp"
+            android:layout_marginRight="16dp"
+            android:gravity="center_vertical">
+
+            <ImageView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_weight="0"
+                android:background="@drawable/icon_license"
+                android:layout_marginRight="16dp"/>
+
+            <TextView
+                style="@style/TextAppearance.Desk.Settings"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="@string/desk_license"/>
+
+        </LinearLayout>
+
+        <View
+            android:id="@+id/separator_2"
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:layout_below="@id/linear_layout_license"
+            android:background="#d9d9d9"/>
+
+        <android.support.v4.widget.ContentLoadingProgressBar
+            style="@style/Widget.AppCompat.ProgressBar"
+            android:id="@+id/progress_bar"
+            android:layout_centerInParent="true"
+            android:layout_width="50dp"
+            android:layout_height="50dp"
+            android:indeterminate="true"/>
+
+    </RelativeLayout>
+
+</android.support.design.widget.CoordinatorLayout>

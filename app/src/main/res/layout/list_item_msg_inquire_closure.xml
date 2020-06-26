@@ -1,0 +1,104 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_height="wrap_content"
+    android:layout_width="match_parent"
+    android:paddingBottom="1dp"
+    android:paddingLeft="16dp"
+    android:paddingRight="16dp"
+    android:orientation="vertical"
+    android:gravity="center_horizontal">
+
+    <TextView
+        style="?attr/deskDateTextAppearance"
+        android:id="@+id/txt_date"
+        android:text="February 22nd"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="14dp"
+        android:layout_marginBottom="14dp"/>
+
+    <View
+        android:id="@+id/view_pre_ungrouping"
+        android:layout_width="match_parent"
+        android:layout_height="5dp"/>
+
+    <LinearLayout
+        style="?attr/deskMessageListViewItemStyle"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="1dp"
+        android:orientation="vertical"
+        android:background="?attr/deskSystemChatBubbleBackground">
+
+        <TextView
+            style="?attr/deskSystemMessageTextAppearance"
+            android:id="@+id/txt_message"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_horizontal"
+            android:text="User has entered the chat"/>
+
+        <LinearLayout
+            android:id="@+id/container_btn"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_margin="8dp"
+            android:orientation="horizontal">
+
+            <RelativeLayout
+                android:layout_width="0px"
+                android:layout_height="32dp"
+                android:layout_weight="1">
+
+                <Button
+                    style="?attr/deskInquireClosureYesTextAppearance"
+                    android:id="@+id/btn_yes"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:background="?attr/deskInquireClosureYesBackground"
+                    android:text="@string/desk_yes"/>
+
+                <android.support.v4.widget.ContentLoadingProgressBar
+                    android:id="@+id/progress_bar_yes"
+                    style="@style/Widget.AppCompat.ProgressBar"
+                    android:layout_width="25dp"
+                    android:layout_height="25dp"
+                    android:indeterminate="true"
+                    android:layout_centerInParent="true"/>
+            </RelativeLayout>
+
+            <RelativeLayout
+                android:layout_width="0px"
+                android:layout_height="32dp"
+                android:layout_weight="1"
+                android:layout_marginLeft="16dp">
+
+                <Button
+                    style="?attr/deskInquireClosureNoTextAppearance"
+                    android:id="@+id/btn_no"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:background="?attr/deskInquireClosureNoBackground"
+                    android:text="@string/desk_no"/>
+
+                <android.support.v4.widget.ContentLoadingProgressBar
+                    android:id="@+id/progress_bar_no"
+                    style="@style/Widget.AppCompat.ProgressBar"
+                    android:layout_width="25dp"
+                    android:layout_height="25dp"
+                    android:indeterminate="true"
+                    android:layout_centerInParent="true"/>
+            </RelativeLayout>
+
+        </LinearLayout>
+
+    </LinearLayout>
+
+    <View
+        android:id="@+id/view_next_ungrouping"
+        android:layout_width="match_parent"
+        android:layout_height="5dp"/>
+
+</LinearLayout>

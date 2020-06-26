@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_height="wrap_content"
+    android:layout_width="match_parent"
+    android:paddingBottom="1dp"
+    android:paddingLeft="16dp"
+    android:paddingRight="16dp"
+    android:orientation="vertical"
+    android:gravity="center_horizontal">
+
+    <TextView
+        style="?attr/deskDateTextAppearance"
+        android:id="@+id/txt_date"
+        android:text="February 22nd"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="14dp"
+        android:layout_marginBottom="14dp"/>
+
+    <View
+        android:id="@+id/view_pre_ungrouping"
+        android:layout_width="match_parent"
+        android:layout_height="5dp"/>
+
+    <LinearLayout
+        style="?attr/deskMessageListViewItemStyle"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="1dp"
+        android:orientation="vertical"
+        android:background="?attr/deskSystemChatBubbleBackground">
+
+        <TextView
+            style="?attr/deskSystemMessageTextAppearance"
+            android:id="@+id/txt_message"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="User has entered the chat"/>
+
+        <TextView
+            style="?attr/deskSystemMessageTimeTextAppearance"
+            android:id="@+id/txt_time"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="6dp"
+            android:layout_gravity="right"
+            android:text="3:55 AM"/>
+
+    </LinearLayout>
+
+    <View
+        android:id="@+id/view_next_ungrouping"
+        android:layout_width="match_parent"
+        android:layout_height="5dp"/>
+
+</LinearLayout>
+

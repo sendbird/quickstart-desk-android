@@ -1,0 +1,125 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:paddingBottom="1dp"
+    android:paddingLeft="16dp"
+    android:paddingRight="16dp"
+    android:orientation="vertical"
+    android:clickable="true">
+
+    <TextView
+        style="?attr/deskDateTextAppearance"
+        android:id="@+id/txt_date"
+        android:text="February 22nd"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="14dp"
+        android:layout_marginBottom="14dp"
+        android:layout_gravity="center_horizontal"/>
+
+    <View
+        android:id="@+id/view_pre_ungrouping"
+        android:layout_width="match_parent"
+        android:layout_height="5dp"/>
+
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="1dp"
+        android:orientation="horizontal"
+        android:layout_gravity="right">
+
+        <TextView
+            android:id="@+id/txt_delivery_status"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginRight="5dp"
+            android:textSize="12sp"
+            android:text="Sending"
+            android:textColor="@android:color/darker_gray"
+            android:textStyle="bold"
+            android:layout_gravity="bottom"/>
+
+        <LinearLayout
+            style="?attr/deskMessageListViewItemStyle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:maxWidth="242dp"
+            android:background="?attr/deskUserChatBubbleBackground"
+            android:gravity="right"
+            android:orientation="vertical">
+
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:minWidth="148dp"
+                android:gravity="center_vertical">
+
+                <ImageView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:background="?attr/deskFileIcon"
+                    android:layout_marginRight="12dp"/>
+
+                <TextView
+                    style="?attr/deskUserFileMessageTextAppearance"
+                    android:id="@+id/txt_message"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:maxWidth="166dp"
+                    android:text="Hi, how are you today?"/>
+
+            </LinearLayout>
+
+            <TextView
+                style="?attr/deskUserFileMessageTimeTextAppearance"
+                android:id="@+id/txt_time"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="12dp"
+                android:gravity="right"
+                android:text="3:55 AM"/>
+
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:background="#b0def4"
+                android:layout_marginTop="12dp"
+                android:layout_marginBottom="12dp"/>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal">
+
+                <TextView
+                    style="?attr/deskUserFileMessageTimeTextAppearance"
+                    android:id="@+id/txt_file_size"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="15KB"/>
+
+                <TextView
+                    style="?attr/deskUserFileMessageTimeTextAppearance"
+                    android:id="@+id/txt_file_download"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="0"
+                    android:text="@string/desk_file_download"/>
+
+            </LinearLayout>
+
+        </LinearLayout>
+
+    </LinearLayout>
+
+    <View
+        android:id="@+id/view_next_ungrouping"
+        android:layout_width="match_parent"
+        android:layout_height="5dp"/>
+
+</LinearLayout>

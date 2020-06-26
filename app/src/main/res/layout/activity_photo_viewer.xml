@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.design.widget.CoordinatorLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/layout_photo_viewer"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:gravity="center_horizontal"
+    android:background="@android:color/black"
+    tools:context=".sample.PhotoViewerActivity">
+
+    <com.sendbird.desk.android.sample.utils.photoview.PhotoView
+        android:id="@+id/main_image_view"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_gravity="center_horizontal"/>
+
+    <android.support.v4.widget.ContentLoadingProgressBar
+        android:id="@+id/progress_bar"
+        style="@style/Widget.AppCompat.ProgressBar"
+        android:layout_width="50dp"
+        android:layout_height="50dp"
+        android:layout_gravity="center"
+        android:visibility="visible"/>
+
+    <RelativeLayout
+        android:id="@+id/layout_btn"
+        style="?attr/actionBarSize"
+        android:gravity="center_vertical"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="#80444444">
+
+        <ImageButton
+            android:id="@+id/btn_close"
+            android:layout_width="30dp"
+            android:layout_height="30dp"
+            android:layout_marginLeft="16dp"
+            android:layout_marginTop="15dp"
+            android:layout_marginBottom="15dp"
+            android:background="#00000000"
+            android:scaleType="fitCenter"
+            android:src="?attr/deskCloseIcon"/>
+
+        <ImageButton
+            android:id="@+id/btn_download"
+            android:layout_width="30dp"
+            android:layout_height="30dp"
+            android:layout_alignParentRight="true"
+            android:layout_marginRight="16dp"
+            android:layout_marginTop="15dp"
+            android:layout_marginBottom="15dp"
+            android:background="#00000000"
+            android:scaleType="fitCenter"
+            android:src="@drawable/btn_save"/>
+
+    </RelativeLayout>
+
+</android.support.design.widget.CoordinatorLayout>

@@ -1,0 +1,136 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <attr name="deskServiceIcon" format="reference"/>
+    <attr name="deskNotificationIcon" format="reference"/>
+    <attr name="deskNotificationLargeIcon" format="reference"/>
+    <attr name="deskServiceName" format="reference"/>
+    <attr name="deskToolbarStyle" format="reference"/>
+
+    <!-- Menu icons -->
+    <attr name="deskInboxIcon" format="reference"/>
+    <attr name="deskNavigationIcon" format="reference"/>
+    <attr name="deskSettingsIcon" format="reference"/>
+    <attr name="deskCloseIcon" format="reference"/>
+
+    <!-- In chat -->
+    <attr name="deskChatBackground" format="reference"/>
+    <attr name="deskSystemChatBubbleBackground" format="reference"/>
+    <attr name="deskUserChatBubbleBackground" format="reference"/>
+    <attr name="deskAgentChatBubbleBackground" format="reference"/>
+
+    <attr name="deskImageViewStyle" format="reference"/>
+    <attr name="deskAvatarIcon" format="reference"/>
+    <attr name="deskSendIcon" format="reference"/>
+    <attr name="deskAttachIcon" format="reference"/>
+    <attr name="deskFileIcon" format="reference"/>
+    <attr name="deskPlayIcon" format="reference"/>
+
+    <attr name="deskDateTextAppearance" format="reference"/>
+    <attr name="deskAgentNameTextAppearance" format="reference"/>
+    <attr name="deskSystemMessageTextAppearance" format="reference"/>
+
+    <attr name="deskUserMessageTextAppearance" format="reference"/>
+    <attr name="deskUserMessageUrlPreviewImage" format="reference"/>
+    <attr name="deskUserMessageUrlPreviewTitleTextAppearance" format="reference"/>
+    <attr name="deskUserMessageUrlPreviewDomainNameTextAppearance" format="reference"/>
+    <attr name="deskUserMessageTimeTextAppearance" format="reference"/>
+
+    <attr name="deskAgentMessageTextAppearance" format="reference"/>
+    <attr name="deskAgentMessageUrlPreviewImage" format="reference"/>
+    <attr name="deskAgentMessageUrlPreviewTitleTextAppearance" format="reference"/>
+    <attr name="deskAgentMessageUrlPreviewDomainNameTextAppearance" format="reference"/>
+    <attr name="deskAgentMessageTimeTextAppearance" format="reference"/>
+
+    <attr name="deskSystemMessageTimeTextAppearance" format="reference"/>
+    <attr name="deskUserFileMessageTextAppearance" format="reference"/>
+    <attr name="deskUserFileMessageTimeTextAppearance" format="reference"/>
+    <attr name="deskAgentFileMessageTextAppearance" format="reference"/>
+    <attr name="deskAgentFileMessageTimeTextAppearance" format="reference"/>
+    <attr name="deskImageTimeTextAppearance" format="reference"/>
+
+    <attr name="deskMessageListViewStyle" format="reference"/>
+    <attr name="deskMessageListViewItemStyle" format="reference"/>
+    <attr name="deskMessageReplyViewStyle" format="reference"/>
+    <attr name="deskMessageReplyEditTextStyle" format="reference"/>
+    <attr name="deskMessageReplyButtonLayoutStyle" format="reference"/>
+
+    <attr name="deskUploadPhotoDrawable" format="reference"/>
+    <attr name="deskTakePhotoDrawable" format="reference"/>
+    <attr name="deskUploadVideoDrawable" format="reference"/>
+    <attr name="deskTakeVideoDrawable" format="reference"/>
+
+    <attr name="deskPopupTextAppearance" format="reference"/>
+    <attr name="deskInquireClosureYesBackground" format="reference"/>
+    <attr name="deskInquireClosureNoBackground" format="reference"/>
+    <attr name="deskInquireClosureYesTextAppearance" format="reference"/>
+    <attr name="deskInquireClosureNoTextAppearance" format="reference"/>
+
+    <!--In inbox -->
+    <attr name="deskInboxBackground" format="reference|color"/>
+    <attr name="deskInboxTabLayoutStyle" format="reference"/>
+    <attr name="deskTicketListViewStyle" format="reference"/>
+    <attr name="deskTicketListViewItemStyle" format="reference"/>
+    <attr name="deskOpenTicketTitleTextAppearance" format="reference"/>
+    <attr name="deskOpenTicketLastMessageTextAppearance" format="reference"/>
+    <attr name="deskOpenTicketLastUpdatedTextAppearance" format="reference"/>
+    <attr name="deskOpenTicketUnreadCountTextAppearance" format="reference"/>
+    <attr name="deskOpenTicketAgentNameTextAppearance" format="reference"/>
+    <attr name="deskOpenTicketAgentImageViewStyle" format="reference"/>
+    <attr name="deskClosedTicketTitleTextAppearance" format="reference"/>
+    <attr name="deskClosedTicketLastMessageTextAppearance" format="reference"/>
+    <attr name="deskClosedTicketLastUpdatedTextAppearance" format="reference"/>
+    <attr name="deskClosedTicketUnreadCountTextAppearance" format="reference"/>
+    <attr name="deskClosedTicketAgentNameTextAppearance" format="reference"/>
+    <attr name="deskClosedTicketAgentImageViewStyle" format="reference"/>
+    <attr name="deskEmptyInboxDrawable" format="reference"/>
+    <attr name="deskEmptyInboxMainTextAppearance" format="reference"/>
+    <attr name="deskEmptyInboxDetailTextAppearance" format="reference"/>
+    <attr name="deskSettingsTextAppearance" format="reference"/>
+    <attr name="deskLicenseTextAppearance" format="reference"/>
+
+    <!-- In web -->
+    <attr name="deskWebTitleTextAppearance" format="reference"/>
+    <attr name="deskWebSubTitleTextAppearance" format="reference"/>
+    <attr name="deskWebRefreshIcon" format="reference"/>
+
+    <declare-styleable name="RoundedImageView">
+        <attr name="deskCornerRadius" format="reference|dimension"/>
+        <attr name="deskBorderWidth" format="reference|dimension"/>
+        <attr name="deskBorderColor" format="reference|color"/>
+    </declare-styleable>
+
+
+    <declare-styleable name="ucrop_UCropView">
+
+        <!--Crop image view-->
+        <attr name="ucrop_aspect_ratio_x" format="float"/>
+        <attr name="ucrop_aspect_ratio_y" format="float"/>
+
+        <!--Overlay view-->
+        <attr name="ucrop_show_oval_crop_frame" format="boolean"/>
+        <attr name="ucrop_circle_dimmed_layer" format="boolean"/>
+        <attr name="ucrop_dimmed_color" format="color"/>
+
+        <attr name="ucrop_grid_stroke_size" format="dimension"/>
+        <attr name="ucrop_grid_color" format="color"/>
+        <attr name="ucrop_grid_row_count" format="integer"/>
+        <attr name="ucrop_grid_column_count" format="integer"/>
+        <attr name="ucrop_show_grid" format="boolean"/>
+
+        <attr name="ucrop_frame_stroke_size" format="dimension"/>
+        <attr name="ucrop_frame_color" format="color"/>
+        <attr name="ucrop_show_frame" format="boolean"/>
+
+    </declare-styleable>
+
+    <declare-styleable name="ucrop_AspectRatioTextView">
+
+        <attr name="ucrop_artv_ratio_title" format="string"/>
+
+        <attr name="ucrop_artv_ratio_x" format="float"/>
+        <attr name="ucrop_artv_ratio_y" format="float"/>
+
+    </declare-styleable>
+
+</resources>

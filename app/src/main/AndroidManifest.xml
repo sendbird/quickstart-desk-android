@@ -1,0 +1,100 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+          xmlns:tools="http://schemas.android.com/tools"
+          package="com.sendbird.desk.android.sample">
+
+    <uses-permission android:name="android.permission.INTERNET"/>
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"/>
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"/>
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
+
+    <application
+        android:name="com.sendbird.desk.android.sample.app.MyApplication"
+        android:allowBackup="false"
+        android:icon="@mipmap/ic_launcher"
+        android:label="@string/app_name"
+        android:supportsRtl="true"
+        android:theme="@style/AppTheme"
+        tools:ignore="GoogleAppIndexingWarning">
+
+        <activity
+            android:name="com.sendbird.desk.android.sample.activity.MainActivity"
+            android:configChanges="orientation|screenSize"
+            android:windowSoftInputMode="stateHidden"
+            android:theme="@style/AppTheme.NoActionBar">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN"/>
+                <category android:name="android.intent.category.LAUNCHER"/>
+            </intent-filter>
+        </activity>
+
+        <service android:name=".fcm.MyFirebaseMessagingService">
+            <intent-filter>
+                <action android:name="com.google.firebase.MESSAGING_EVENT"/>
+            </intent-filter>
+        </service>
+        <service android:name=".fcm.MyFirebaseInstanceIDService">
+            <intent-filter>
+                <action android:name="com.google.firebase.INSTANCE_ID_EVENT"/>
+            </intent-filter>
+        </service>
+
+        <activity
+            android:name=".activity.inbox.InboxActivity"
+            android:configChanges="orientation|screenSize"
+            android:theme="@style/Theme.Desk.Custom"
+            android:windowSoftInputMode="stateAlwaysHidden|adjustResize"
+            android:parentActivityName=".activity.MainActivity"
+            tools:node="merge">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value=".activity.MainActivity"/>
+        </activity>
+        <activity
+            android:name=".activity.chat.ChatActivity"
+            android:configChanges="orientation|screenSize"
+            android:theme="@style/Theme.Desk.Custom"
+            android:windowSoftInputMode="stateAlwaysHidden|adjustResize"
+            android:parentActivityName=".activity.inbox.InboxActivity">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="com.sendbird.desk.android.sample.activity.inbox.InboxActivity"/>
+        </activity>
+        <activity
+            android:name=".activity.settings.SettingsActivity"
+            android:configChanges="orientation|screenSize"
+            android:theme="@style/Theme.Desk.Custom"
+            android:windowSoftInputMode="stateAlwaysHidden|adjustResize"/>
+        <activity
+            android:name=".activity.settings.LicenseActivity"
+            android:configChanges="orientation|screenSize"
+            android:theme="@style/Theme.Desk.Custom"/>
+        <activity
+            android:name=".activity.chat.PhotoViewerActivity"
+            android:theme="@style/Theme.Desk.Viewer"/>
+        <activity
+            android:name=".activity.chat.MediaPlayerActivity"
+            android:configChanges="orientation|screenSize"
+            android:theme="@style/Theme.Desk.Viewer"/>
+        <activity
+            android:name=".activity.chat.WebActivity"
+            android:configChanges="orientation|screenSize"
+            android:theme="@style/Theme.Desk.Custom"
+            android:windowSoftInputMode="stateAlwaysHidden|adjustResize"/>
+        <activity
+            android:name=".utils.ucrop.UCropActivity"
+            android:theme="@style/Theme.Desk.Custom"/>
+
+        <provider
+            android:name="android.support.v4.content.FileProvider"
+            android:authorities="com.sendbird.desk.android.provider"
+            android:exported="false"
+            android:grantUriPermissions="true">
+            <meta-data
+                android:name="android.support.FILE_PROVIDER_PATHS"
+                android:resource="@xml/provider_paths"/>
+        </provider>
+
+    </application>
+
+</manifest>

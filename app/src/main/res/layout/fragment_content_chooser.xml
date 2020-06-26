@@ -1,0 +1,115 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    app:layout_behavior="android.support.design.widget.BottomSheetBehavior"
+    android:layout_width="match_parent"
+    android:layout_height="116dp"
+    android:paddingTop="4dp"
+    android:paddingBottom="4dp"
+    android:orientation="vertical"
+    android:background="#ffffff">
+
+    <LinearLayout
+        android:id="@+id/layout_gallery"
+        android:layout_width="match_parent"
+        android:layout_height="50dp"
+        android:clickable="true"
+        android:focusable="true"
+        android:orientation="horizontal"
+        android:foreground="?android:attr/selectableItemBackground"
+        android:paddingLeft="16dp"
+        android:paddingRight="16dp">
+
+        <ImageView
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            app:srcCompat="?attr/deskUploadPhotoDrawable"/>
+
+        <TextView
+            style="?attr/deskPopupTextAppearance"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="32dp"
+            android:layout_gravity="center_vertical"
+            android:text="@string/desk_upload_photo"/>
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/layout_camera"
+        android:layout_width="match_parent"
+        android:layout_height="50dp"
+        android:clickable="true"
+        android:focusable="true"
+        android:orientation="horizontal"
+        android:foreground="?android:attr/selectableItemBackground"
+        android:paddingLeft="16dp"
+        android:paddingRight="16dp">
+
+        <ImageView
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            app:srcCompat="?attr/deskTakePhotoDrawable"/>
+
+        <TextView
+            style="?attr/deskPopupTextAppearance"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="32dp"
+            android:layout_gravity="center_vertical"
+            android:text="@string/desk_take_photo"/>
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/layout_upload_video"
+        android:layout_width="match_parent"
+        android:layout_height="50dp"
+        android:clickable="true"
+        android:focusable="true"
+        android:orientation="horizontal"
+        android:foreground="?android:attr/selectableItemBackground"
+        android:paddingLeft="16dp"
+        android:paddingRight="16dp">
+
+        <ImageView
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            app:srcCompat="?attr/deskUploadVideoDrawable"/>
+
+        <TextView
+            style="?attr/deskPopupTextAppearance"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="32dp"
+            android:layout_gravity="center_vertical"
+            android:text="@string/desk_upload_video"/>
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/layout_take_video"
+        android:layout_width="match_parent"
+        android:layout_height="50dp"
+        android:clickable="true"
+        android:focusable="true"
+        android:orientation="horizontal"
+        android:foreground="?android:attr/selectableItemBackground"
+        android:paddingLeft="16dp"
+        android:paddingRight="16dp">
+
+        <ImageView
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            app:srcCompat="?attr/deskTakeVideoDrawable"/>
+
+        <TextView
+            style="?attr/deskPopupTextAppearance"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="32dp"
+            android:layout_gravity="center_vertical"
+            android:text="@string/desk_record_video"/>
+    </LinearLayout>
+
+</LinearLayout>

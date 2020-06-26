@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    style="?attr/deskTicketListViewItemStyle"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="horizontal">
+
+    <ImageView
+        style="?attr/deskOpenTicketAgentImageViewStyle"
+        android:id="@+id/img_agent_profile"
+        android:layout_width="55dp"
+        android:layout_height="match_parent"
+        android:scaleType="fitCenter"
+        android:src="?attr/deskAvatarIcon"/>
+
+    <RelativeLayout
+        android:layout_width="0px"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:layout_marginLeft="16dp">
+
+        <TextView
+            style="?attr/deskOpenTicketAgentNameTextAppearance"
+            android:id="@+id/txt_agent_name"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Jay"/>
+
+        <TextView
+            style="?attr/deskOpenTicketTitleTextAppearance"
+            android:id="@+id/txt_title"
+            android:layout_width="230dp"
+            android:layout_height="wrap_content"
+            android:layout_below="@id/txt_agent_name"
+            android:layout_alignLeft="@id/txt_agent_name"
+            android:layout_marginTop="2dp"
+            android:maxLines="1"
+            android:text="[Not Responding]asdkjglajsdlkgjalskjdlkgjalskdjglkajskdljgalksjdkglajs"/>
+
+        <TextView
+            style="?attr/deskOpenTicketLastMessageTextAppearance"
+            android:id="@+id/txt_last_message"
+            android:layout_width="230dp"
+            android:layout_height="wrap_content"
+            android:layout_below="@id/txt_title"
+            android:layout_alignLeft="@id/txt_title"
+            android:layout_marginTop="1dp"
+            android:maxLines="1"
+            android:text="May I help you? ablaksjdlg alsjdlkjglkj aslkdj lasjd kgla"/>
+
+        <TextView
+            style="?attr/deskOpenTicketLastUpdatedTextAppearance"
+            android:id="@+id/txt_last_update"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentRight="true"
+            android:layout_alignBaseline="@id/txt_agent_name"
+            android:text="4:10 PM"/>
+
+        <TextView
+            style="?attr/deskOpenTicketUnreadCountTextAppearance"
+            android:id="@+id/txt_unread_count"
+            android:layout_alignParentRight="true"
+            android:layout_alignBottom="@id/txt_last_message"
+            android:text="9+"/>
+
+    </RelativeLayout>
+
+</LinearLayout>

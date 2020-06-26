@@ -1,0 +1,132 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:paddingBottom="1dp"
+    android:paddingLeft="16dp"
+    android:paddingRight="16dp"
+    android:orientation="vertical"
+    android:clickable="true">
+
+    <TextView
+        style="?attr/deskDateTextAppearance"
+        android:id="@+id/txt_date"
+        android:text="February 22nd"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="14dp"
+        android:layout_marginBottom="14dp"
+        android:layout_gravity="center_horizontal"/>
+
+    <View
+        android:id="@+id/view_pre_ungrouping"
+        android:layout_width="match_parent"
+        android:layout_height="5dp"/>
+
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="1dp"
+        android:orientation="horizontal"
+        android:layout_gravity="right">
+
+        <RelativeLayout
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:layout_marginRight="5dp">
+
+            <TextView
+                android:id="@+id/txt_delivery_status"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:textSize="12sp"
+                android:text="Sending"
+                android:textColor="@android:color/darker_gray"
+                android:textStyle="bold"
+                android:gravity="bottom"/>
+
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:gravity="center_vertical">
+
+                <android.support.v4.widget.ContentLoadingProgressBar
+                    style="@style/Widget.AppCompat.ProgressBar"
+                    android:id="@+id/loading_progress_bar"
+                    android:layout_width="33dp"
+                    android:layout_height="33dp"
+                    android:indeterminate="true"/>
+
+            </LinearLayout>
+
+        </RelativeLayout>
+
+        <LinearLayout
+            android:id="@+id/message_container"
+            style="?attr/deskMessageListViewItemStyle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:background="?attr/deskUserChatBubbleBackground"
+            android:layout_gravity="right"
+            android:orientation="vertical">
+
+            <TextView
+                style="?attr/deskUserMessageTextAppearance"
+                android:id="@+id/txt_message"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:maxWidth="218dp"
+                android:autoLink="web"
+                android:text="Hi, how are you today?"/>
+
+            <TextView
+                style="?attr/deskUserMessageTimeTextAppearance"
+                android:id="@+id/txt_time"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="6dp"
+                android:layout_gravity="right"
+                android:text="3:55 AM"/>
+
+        </LinearLayout>
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/url_preview_container"
+        android:layout_width="242dp"
+        android:layout_height="wrap_content"
+        android:background="?attr/deskUserChatBubbleBackground"
+        android:layout_marginTop="2dp"
+        android:orientation="vertical"
+        android:layout_gravity="right">
+
+        <com.sendbird.desk.android.sample.utils.image.TopCornerRoundedImageView
+            style="?attr/deskAgentMessageUrlPreviewImage"
+            android:id="@+id/img_url_preview_main"
+            android:layout_width="240dp"
+            android:layout_height="135dp"
+            android:layout_gravity="center_horizontal"
+            android:layout_marginTop="1dp"/>
+
+        <TextView
+            style="?attr/deskUserMessageUrlPreviewTitleTextAppearance"
+            android:id="@+id/txt_url_preview_title"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"/>
+
+        <TextView
+            style="?attr/deskUserMessageUrlPreviewDomainNameTextAppearance"
+            android:id="@+id/txt_url_preview_domain_name"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"/>
+
+    </LinearLayout>
+
+    <View
+        android:id="@+id/view_next_ungrouping"
+        android:layout_width="match_parent"
+        android:layout_height="5dp"/>
+
+</LinearLayout>

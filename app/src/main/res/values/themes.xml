@@ -1,0 +1,118 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <style name="Theme.Desk.Custom" parent="Theme.Desk"/>
+
+    <style name="Theme.Desk.Viewer" parent="Theme.Desk.Custom">
+        <item name="colorPrimaryDark">#000000</item>
+    </style>
+
+    <style name="Theme.Desk.AlertDialog" parent="Theme.Desk.Custom">
+        <item name="android:textColorPrimary">#000000</item>
+    </style>
+
+    <style name="Theme.Desk" parent="Theme.AppCompat.Light.NoActionBar">
+        <item name="colorPrimary">#7d62d9</item>
+        <item name="colorPrimaryDark">#6451ab</item>
+        <item name="colorAccent">#7851d3</item>
+
+        <item name="actionBarSize">56dp</item>
+        <item name="actionButtonStyle">@style/Widget.Desk.Toolbar.ActionButton</item>
+        <item name="android:textColorPrimary">#ffffff</item>
+        <item name="android:textColorLink">#27A9FF</item>
+
+        <item name="deskServiceIcon">@drawable/img_service</item>
+        <item name="deskNotificationIcon">@drawable/img_notification</item>
+        <item name="deskNotificationLargeIcon">@drawable/img_notification_large</item>
+        <item name="deskServiceName">@string/desk_service_name</item>
+        <item name="deskToolbarStyle">@style/Widget.Desk.Toolbar</item>
+
+        <!-- Menu icons -->
+        <item name="deskInboxIcon">@drawable/btn_back</item>
+        <item name="deskNavigationIcon">@drawable/btn_back</item>
+        <item name="deskSettingsIcon">@drawable/btn_settings</item>
+        <item name="deskCloseIcon">@drawable/btn_close</item>
+
+        <!-- In chat -->
+        <item name="deskChatBackground">@drawable/bg_chat</item>
+        <item name="deskSystemChatBubbleBackground">@drawable/bg_msg_sys</item>
+        <item name="deskUserChatBubbleBackground">@drawable/bg_msg_user</item>
+        <item name="deskAgentChatBubbleBackground">@drawable/bg_msg_agent</item>
+
+        <item name="deskImageViewStyle">@style/Widget.Desk.RoundedImageView</item>
+        <item name="deskAvatarIcon">@drawable/img_profile</item>
+        <item name="deskSendIcon">@drawable/btn_send</item>
+        <item name="deskAttachIcon">@drawable/btn_attach</item>
+        <item name="deskFileIcon">@drawable/icon_file</item>
+        <item name="deskPlayIcon">@drawable/btn_play_video</item>
+
+        <item name="deskDateTextAppearance">@style/TextAppearance.Desk.Date</item>
+        <item name="deskAgentNameTextAppearance">@style/TextAppearance.Desk.AgentName</item>
+        <item name="deskSystemMessageTextAppearance">@style/TextAppearance.Desk.SystemMessage</item>
+
+        <item name="deskUserMessageTextAppearance">@style/TextAppearance.Desk.UserMessage</item>
+        <item name="deskUserMessageUrlPreviewImage">@style/Widget.Desk.UserMessageUrlPreviewImage</item>
+        <item name="deskUserMessageUrlPreviewTitleTextAppearance">@style/TextAppearance.Desk.UserMessageUrlPreviewTitle</item>
+        <item name="deskUserMessageUrlPreviewDomainNameTextAppearance">@style/TextAppearance.Desk.UserMessageUrlPreviewDomainName</item>
+        <item name="deskUserMessageTimeTextAppearance">@style/TextAppearance.Desk.UserMessageTime</item>
+
+        <item name="deskAgentMessageTextAppearance">@style/TextAppearance.Desk.AgentMessage</item>
+        <item name="deskAgentMessageUrlPreviewImage">@style/Widget.Desk.AgentMessageUrlPreviewImage</item>
+        <item name="deskAgentMessageUrlPreviewTitleTextAppearance">@style/TextAppearance.Desk.AgentMessageUrlPreviewTitle</item>
+        <item name="deskAgentMessageUrlPreviewDomainNameTextAppearance">@style/TextAppearance.Desk.AgentMessageUrlPreviewDomainName</item>
+        <item name="deskAgentMessageTimeTextAppearance">@style/TextAppearance.Desk.AgentMessageTime</item>
+
+        <item name="deskSystemMessageTimeTextAppearance">@style/TextAppearance.Desk.SystemMessageTime</item>
+        <item name="deskUserFileMessageTextAppearance">@style/TextAppearance.Desk.UserFileMessage</item>
+        <item name="deskUserFileMessageTimeTextAppearance">@style/TextAppearance.Desk.UserFileMessageTime</item>
+        <item name="deskAgentFileMessageTextAppearance">@style/TextAppearance.Desk.AgentFileMessage</item>
+        <item name="deskAgentFileMessageTimeTextAppearance">@style/TextAppearance.Desk.AgentFileMessageTime</item>
+        <item name="deskImageTimeTextAppearance">@style/TextAppearance.Desk.ImageTime</item>
+
+        <item name="deskMessageListViewStyle">@style/Widget.Desk.MessageListView</item>
+        <item name="deskMessageListViewItemStyle">@style/Widget.Desk.MessageListViewItem</item>
+        <item name="deskMessageReplyViewStyle">@style/Widget.Desk.MessageReplyView</item>
+        <item name="deskMessageReplyEditTextStyle">@style/Widget.Desk.MessageReplyEditText</item>
+        <item name="deskMessageReplyButtonLayoutStyle">@style/Widget.Desk.MessageReplyButtonLayout</item>
+
+        <item name="deskUploadPhotoDrawable">@drawable/icon_image</item>
+        <item name="deskTakePhotoDrawable">@drawable/icon_camera</item>
+        <item name="deskUploadVideoDrawable">@drawable/icon_video</item>
+        <item name="deskTakeVideoDrawable">@drawable/icon_video_camera</item>
+
+        <item name="deskPopupTextAppearance">@style/TextAppearance.Desk.Popup</item>
+        <item name="deskInquireClosureYesBackground">@drawable/bg_inquire_closure_yes</item>
+        <item name="deskInquireClosureNoBackground">@drawable/bg_inquire_closure_no</item>
+        <item name="deskInquireClosureYesTextAppearance">@style/TextAppearance.Desk.InquireClosureYes</item>
+        <item name="deskInquireClosureNoTextAppearance">@style/TextAppearance.Desk.InquireClosureNo</item>
+
+        <!--In inbox -->
+        <item name="deskInboxBackground">#ffffff</item>
+        <item name="deskInboxTabLayoutStyle">@style/Widget.Desk.InboxTabLayout</item>
+        <item name="deskTicketListViewStyle">@style/Widget.Desk.TicketListView</item>
+        <item name="deskTicketListViewItemStyle">@style/Widget.Desk.TicketListViewItem</item>
+        <item name="deskOpenTicketTitleTextAppearance">@style/TextAppearance.Desk.OpenTicketTitle</item>
+        <item name="deskOpenTicketLastMessageTextAppearance">@style/TextAppearance.Desk.OpenTicketLastMessage</item>
+        <item name="deskOpenTicketLastUpdatedTextAppearance">@style/TextAppearance.Desk.OpenTicketLastUpdated</item>
+        <item name="deskOpenTicketUnreadCountTextAppearance">@style/TextAppearance.Desk.OpenTicketUnreadCount</item>
+        <item name="deskOpenTicketAgentNameTextAppearance">@style/TextAppearance.Desk.OpenTicketAgentName</item>
+        <item name="deskOpenTicketAgentImageViewStyle">@style/Widget.Desk.OpenTicketAgentImageView</item>
+        <item name="deskClosedTicketTitleTextAppearance">@style/TextAppearance.Desk.ClosedTicketTitle</item>
+        <item name="deskClosedTicketLastMessageTextAppearance">@style/TextAppearance.Desk.ClosedTicketLastMessage</item>
+        <item name="deskClosedTicketLastUpdatedTextAppearance">@style/TextAppearance.Desk.ClosedTicketLastUpdated</item>
+        <item name="deskClosedTicketUnreadCountTextAppearance">@style/TextAppearance.Desk.ClosedTicketUnreadCount</item>
+        <item name="deskClosedTicketAgentNameTextAppearance">@style/TextAppearance.Desk.ClosedTicketAgentName</item>
+        <item name="deskClosedTicketAgentImageViewStyle">@style/Widget.Desk.ClosedTicketAgentImageView</item>
+        <item name="deskEmptyInboxDrawable">@drawable/img_empty_list</item>
+        <item name="deskEmptyInboxMainTextAppearance">@style/TextAppearance.Desk.EmptyInboxMain</item>
+        <item name="deskEmptyInboxDetailTextAppearance">@style/TextAppearance.Desk.EmptyInboxDetail</item>
+        <item name="deskSettingsTextAppearance">@style/TextAppearance.Desk.Settings</item>
+        <item name="deskLicenseTextAppearance">@style/TextAppearance.Desk.License</item>
+
+        <!-- In web -->
+        <item name="deskWebTitleTextAppearance">@style/TextAppearance.Desk.WebTitle</item>
+        <item name="deskWebSubTitleTextAppearance">@style/TextAppearance.Desk.WebSubTitle</item>
+        <item name="deskWebRefreshIcon">@drawable/btn_refresh</item>
+    </style>
+
+</resources>

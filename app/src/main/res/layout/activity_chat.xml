@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/layout_root"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="?attr/deskChatBackground">
+
+    <android.support.v7.widget.Toolbar
+        style="?attr/deskToolbarStyle"
+        android:id="@+id/toolbar"
+        android:elevation="4dp"/>
+
+    <!--<android.support.v4.widget.SwipeRefreshLayout-->
+        <!--android:id="@+id/refresh_layout"-->
+        <!--android:layout_width="match_parent"-->
+        <!--android:layout_height="match_parent"-->
+        <!--android:layout_below="@id/toolbar"-->
+        <!--android:layout_above="@+id/separator">-->
+
+        <com.sendbird.desk.android.sample.activity.chat.ChatListView
+            style="?attr/deskMessageListViewStyle"
+            android:id="@+id/list_view"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_below="@id/toolbar"
+            android:layout_above="@+id/separator"
+            android:transcriptMode="normal"/>
+
+    <!--</android.support.v4.widget.SwipeRefreshLayout>-->
+
+    <android.support.v4.widget.ContentLoadingProgressBar
+        style="@style/Widget.AppCompat.ProgressBar"
+        android:id="@+id/progress_bar"
+        android:layout_centerInParent="true"
+        android:layout_width="50dp"
+        android:layout_height="50dp"
+        android:indeterminate="true"/>
+
+    <View
+        android:id="@id/separator"
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:layout_above="@+id/layout_reply"
+        android:layout_alignWithParentIfMissing="true"
+        android:background="#d9d9d9"/>
+
+    <LinearLayout
+        style="?attr/deskMessageReplyViewStyle"
+        android:id="@id/layout_reply"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:layout_alignParentBottom="true">
+
+        <EditText
+            style="?attr/deskMessageReplyEditTextStyle"
+            android:id="@+id/etxt_reply"
+            android:layout_width="0px"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:layout_gravity="center_vertical"
+            android:imeOptions="flagNoExtractUi"/>
+
+        <RelativeLayout
+            style="?attr/deskMessageReplyButtonLayoutStyle"
+            android:layout_width="33dp"
+            android:layout_height="33dp"
+            android:layout_weight="0">
+
+            <android.support.v4.widget.ContentLoadingProgressBar
+                style="@style/Widget.AppCompat.ProgressBar"
+                android:id="@+id/uploading_progress_bar"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:indeterminate="true"/>
+
+            <ImageButton
+                android:id="@+id/btn_attach"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:src="?attr/deskAttachIcon"
+                android:background="#00000000"
+                android:scaleType="fitCenter"/>
+
+            <ImageButton
+                android:id="@+id/btn_send"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:src="?attr/deskSendIcon"
+                android:background="#00000000"
+                android:scaleType="fitCenter"/>
+
+        </RelativeLayout>
+
+    </LinearLayout>
+
+</RelativeLayout>

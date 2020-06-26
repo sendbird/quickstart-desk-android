@@ -1,0 +1,42 @@
+{
+  "project_info": {
+    "project_number": "596968175943",
+    "firebase_url": "https://sendbird-desk-sample-d8d4d.firebaseio.com",
+    "project_id": "sendbird-desk-sample-d8d4d",
+    "storage_bucket": "sendbird-desk-sample-d8d4d.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:596968175943:android:89a5f81b0cd88640",
+        "android_client_info": {
+          "package_name": "com.sendbird.desk.android.sample"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "596968175943-8mncm4d1jij4s829qc4kninn6pbr12kh.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAtLdEUUzBdMlG6b_On-Eal7hXepurTZks"
+        }
+      ],
+      "services": {
+        "analytics_service": {
+          "status": 1
+        },
+        "appinvite_service": {
+          "status": 1,
+          "other_platform_oauth_client": []
+        },
+        "ads_service": {
+          "status": 2
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
