@@ -19,14 +19,9 @@ It goes through the steps of:
   1. [Installation](#installation)
   1. [Initialization](#initialization)
   1. [Authentication](#authentication)
-  1. [Setting customer customFields](#setting-customer-customfields)
   1. [Creating a new ticket](#creating-a-new-ticket)
-  1. [Count of opened tickets](#count-of-opened-tickets)
   1. [Loading ticket list](#loading-ticket-list)
   1. [Confirming end of chat](#confirming-end-of-chat)
-  1. [Handling ticket event](#handling-ticket-event)
-  1. [Rich messages](#rich-messages)
-  1. [Ticket Feedback](#ticket-feedback)
 
 ## Prerequisites
 - Android 4.0 or later and SendBird Android SDK 3.0.55 or later
@@ -195,31 +190,6 @@ Ticket.create(ticketTitle, userName,
 ```
 > Each key in `customFields` should be preregistered in Dashboard. Otherwise, the key would be ignored.
 
-## Setting Ticket customFields
-
-Ticket information could be kept in `customFields`. 
-`setCustomFields()` in `Ticket` lets the SDK set the `customFields` of the current ticket. 
-The `customFields` columns should be defined in SendBird Dashboard beforehand. 
-Otherwise, the setting would be ignored.
-
-```java
-Map<String, String> customFields = new HashMap<>();
-customFields.put("gender", "male");
-customFields.put("age", String.valueOf(20));
-
-ticket.setCustomFields(customFields, new Ticket.SetCustomFieldHandler() {
-    @Override
-    public void onResult(Ticket ticket, SendBirdException e) {
-        if (e != null) {
-            // Error handling.
-            return;
-        }
-        
-        // ticket's customFields is rightly set
-        // (or a certain key could get ignored if the key is not defined yet)
-    }
-});
-```
 
 ## Setting Ticket priority
 
@@ -238,21 +208,6 @@ ticket.setTicketPriority(priority, new Ticket.SetTicketPriorityHandler() {
         }
         
         // ticket's priority is rightly set
-    }
-});
-```
-
-## Count of opened tickets
-When you need to display opened ticket count somewhere on your application, `Ticket.getOpenCount()` is useful.
-```java
-Ticket.getOpenCount(new Ticket.GetOpenCountHandler() {
-    @Override
-    public void onResult(int count, SendBirdException e) {
-        if (e != null) {
-            // Error handling.
-            return;
-        }
-
     }
 });
 ```
@@ -324,54 +279,5 @@ ticket.confirmEndOfChat(userMessage, confirm_or_decline, new Ticket.ConfirmEndOf
 ```
 At the moment, tickets will be closed (ticket close event will be sent to customers) only after customers confirming end of chat,  
 
-## Handling ticket event
-SendBird Desk SDK uses some predefined AdminMessage custom type (`AdminMessage.getCustomType()` on SendBird SDK) for ticket update notification.
-This reserved custom type value is `SENDBIRD_DESK_ADMIN_MESSAGE_CUSTOM_TYPE` and at the moment there are 3 kinds of ticket event, which are `Ticket assign`, `Ticket transfer` and `Ticket close`.
-Each event has the following `AdminMessage.getData()`:
-```js
-{
-    "type": "TICKET_ASSIGN" // "TICKET_TRANSFER", "TICKET_CLOSE"
-}
-```
-You can check these messages from `ChannelHandler.onMessageReceived()` callback on SendBird SDK.
-SendBird Desk SDK internally tracks these events and update ticket status automatically. So when you see these events, you can directly get ticket object by `Ticket.getByChannelUrl()` and then use it for e.g. 
-rendering assigned agent's profile or moving ticket from open list to closed list.
-
-## Rich messages
-Besides, `Confirm end of chat` message, URL preview is available as one of rich messages. (We are adding more very fast.)
-URL preview message's `UserMessage.getCustomType()` is also the same as `Confirm end of chat`, so it is `SENDBIRD_DESK_RICH_MESSAGE`.
-Its `UserMessage.getData()` has the following format:
-```js
-{
-    "type": "SENDBIRD_DESK_URL_PREVIEW",
-    "body": {
-        "url": "string",
-        "site_name": "string",
-        "title": "string",
-        "description": "string",
-        "image": "string (image url)"
-    }
-}
-```
-Therefore, when this type of message is received on `ChannelHandler.onMessageReceived()` or `channel.getPreviousMessagesByTimestamp()`, you can parse the data and use it for URL preview rendering.
-Also if you extract URL information from customers text, build above JSON, stringify it and then send it as custom data by `channel.sendUserMessage()`, agents can also see URL preview.
-
-## Ticket Feedback
-If Desk satisfaction feature is on, a message would come after closing the ticket. 
-The message is for getting customer feedback including score and comment. 
-The data of satisfaction form message looks like below.
-```
-{
-    "type": "SENDBIRD_DESK_CUSTOMER_SATISFACTION",
-    "body": {
-        "state": "WAITING" // also can have "CONFIRMED",
-        "customerSatisfactionScore": null, // or a number ranged in [1, 5]
-        "customerSatisfactionComment": null // or a string (optional)
-    }
-}
-```
-Once the customer inputs the score and the comment, the data could be submitted by calling `ticket.submitFeedback(message, score, comment, callback)`. 
-Then updated message is going to be sent in `ChannelHandler.onMessageUpdated(BaseChannel channel, BaseMessage message)`.
-
 ## Reference
-Please see the following link for Android Desk SDK Documentation https://github.com/sendbird/SendBird-Desk-iOS-Framework
+Please see the following link for Android Desk SDK Documentation https://github.com/sendbird/SendBird-Desk-SDK-Android
