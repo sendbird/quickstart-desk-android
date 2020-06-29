@@ -110,32 +110,6 @@ SendBird.connect(userId, accessToken, new SendBird.ConnectHandler() {
   
 Now your customers are ready to create chat tickets and start inquiry with your agents!
 
-## Setting customer customFields
-
-Customer information could be kept in `customFields`. 
-`setCustomerCustomFields()` in `SendBirdDesk` lets the SDK set the `customFields` of the current customer. 
-The `customFields` columns should be defined in SendBird Dashboard beforehand. 
-Otherwise, the setting would be ignored.
-
-```java
-Map<String, String> customFields = new HashMap<>();
-customFields.put("gender", "male");
-customFields.put("age", String.valueOf(20));
-
-SendBirdDesk.setCustomerCustomFields(customFields, new SendBirdDesk.SetCustomerCustomFieldsHandler() {
-    @Override
-    public void onResult(SendBirdException e) {
-        if (e != null) {
-            // Error handling.
-            return;
-        }
-        
-        // customer's customFields is rightly set
-        // (or a certain key could get ignored if the key is not defined yet)
-    }
-});
-```
-
 ## Creating a new ticket
 
 Creating a new ticket is as simple as just calling `Ticket.create()`. Ticket title and user name can be passed at the same time.
@@ -190,27 +164,6 @@ Ticket.create(ticketTitle, userName,
 ```
 > Each key in `customFields` should be preregistered in Dashboard. Otherwise, the key would be ignored.
 
-
-## Setting Ticket priority
-
-Ticket information could be kept in `Priority`. 
-`setTicketPriority()` in `Ticket` lets the SDK set the `Priority` of the current ticket. 
-If you didn't set the Priority of ticket the default `Priority` has been set to `Priority.MEDIUM`
-
-
-```java
-ticket.setTicketPriority(priority, new Ticket.SetTicketPriorityHandler() {
-    @Override
-    public void onResult(Ticket ticket, SendBirdException e) {
-        if (e != null) {
-            // Error handling.
-            return;
-        }
-        
-        // ticket's priority is rightly set
-    }
-});
-```
 
 ## Loading ticket list
 Usually you will design `Inbox` activity for open tickets and closed tickets history for your customer.
