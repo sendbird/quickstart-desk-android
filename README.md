@@ -207,7 +207,7 @@ There are predefined rich messages on Sendbird Desk and `Confirm end of chat` is
 All rich messages have message custom type (can be accessed by `UserMessage.getCustomType()` on Sendbird SDK) as `SENDBIRD_DESK_RICH_MESSAGE`,
 and `Confirm end of chat` message has custom data (can be accessed by `UserMessage.getData()` on Sendbird SDK) as below:
 
-```json
+```js
 {
     "type": "SENDBIRD_DESK_INQUIRE_TICKET_CLOSURE",
     "body": {
