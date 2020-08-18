@@ -211,7 +211,7 @@ and `Confirm end of chat` message has custom data (can be accessed by `UserMessa
 {
     "type": "SENDBIRD_DESK_INQUIRE_TICKET_CLOSURE",
     "body": {
-        "state": "WAITING" // also can have "CONFIRMED", "DECLINED"
+        "state": "WAITING" // also can have \"CONFIRMED\", \"DECLINED\"
     }
 }
 ```
