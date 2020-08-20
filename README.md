@@ -24,6 +24,7 @@ It goes through the steps of:
   1. [Creating a new ticket](#creating-a-new-ticket)
   1. [Loading ticket list](#loading-ticket-list)
   1. [Confirming end of chat](#confirming-end-of-chat)
+  1. [Error codes](#error-codes)
 
 ## Prerequisites
 - Android 4.0 or later and Sendbird Android SDK 3.0.55 or later
@@ -235,7 +236,15 @@ ticket.confirmEndOfChat(userMessage, confirm_or_decline, new Ticket.ConfirmEndOf
     }
 });
 ```
-At the moment, tickets will be closed (ticket close event will be sent to customers) only after customers confirming end of chat,  
+At the moment, tickets will be closed (ticket close event will be sent to customers) only after customers confirming end of chat.
+
+## Error Codes
+In case of an API request failure, the `SendBirdException` parameter in a handler will contain the information about the error.
+#### SendBirdException
+|Property|Description|
+|----|----|
+|code|`SendBirdError.ERR_REQUEST_FAILED (800220)`|
+|message|Detailed error message with specific error code, if exists.|
 
 ## Reference
 Please see the following link for Android Desk SDK Documentation https://github.com/sendbird/SendBird-Desk-SDK-Android
