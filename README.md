@@ -12,7 +12,7 @@ Built with Sendbird Chat platforms, Sendbird Desk is a live chat customer suppor
 
 This section provides the pre-installation steps for Sendbird Desk for Android sample app. 
 
-## Prerequisites
+### Requirements
 
 - Android 4.0 or higher
 - Chat SDK for Android 3.0.90 or higher
