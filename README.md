@@ -29,7 +29,7 @@ Following the previous instructions will allow you to experience the sample app 
 
 ## Getting started
 
-If you're familiar with using external libraries or SDKs in your projects, installing Desk will be an easy and straightforward process.
+If you're familiar with using external libraries or SDKs in your projects, installing the Desk SDK will be an easy and straightforward process.
 
 ### Install Desk for Android
 
