@@ -31,14 +31,11 @@ Following the previous instructions will allow you to experience the sample app 
 
 This section explains the steps you need to take before testing the sample app
 
-### Install Desk for Android
+### Use
 
 You can install Desk for Android as follows: 
 
-#### Gradle
-
-Add the following lines to your project-level `build.gradle` file.
-
+1. Add the following lines to your project-level `build.gradle` file.
 ```gradle
 repositories {
     maven { url "https://raw.githubusercontent.com/sendbird/SendBird-SDK-Android/master/" }
@@ -46,7 +43,7 @@ repositories {
 }
 ```
 
-And then add the following lines to your app-level `build.gradle` file.
+2. And then add the following lines to your app-level `build.gradle` file.
 ```gradle
 dependencies {
     implementation 'com.sendbird.sdk:sendbird-android-sdk:3.0.141'
