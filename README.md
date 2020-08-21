@@ -29,9 +29,9 @@ Following the previous instructions will allow you to experience the sample app 
 
 ## Getting started
 
-If you're familiar with using external libraries or SDKs in your projects, installing the Desk SDK will be an easy and straightforward process.
+This section explains how to install Desk SDK for Android before testing the sample app. If you're familiar with using external libraries or SDKs in your projects, installing the Desk SDK will be an easy and straightforward process. 
 
-### Install Desk for Android
+### Install Desk SDK for Android
 
 Using `Gradle`, you can install Desk for Android as follows: 
 
