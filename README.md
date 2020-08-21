@@ -19,7 +19,7 @@ This section provides the pre-installation steps for Sendbird Desk for Android s
 
 ### Try the sample app applied with your data 
 
-If you would like to customize the sample app for your usage, you can replace the default sample app ID with your ID - which you can obtain by c[creating your Sendbird application from the dashboard](https://docs.sendbird.com/android/quick_start#3_install_and_configure_the_chat_sdk_4_step_1_create_a_sendbird_application_from_your_dashboard).
+If you would like to customize the sample app for your usage, you can replace the default sample app ID with your ID - which you can obtain by [creating your Sendbird application from the dashboard](https://docs.sendbird.com/android/quick_start#3_install_and_configure_the_chat_sdk_4_step_1_create_a_sendbird_application_from_your_dashboard).
 
 > Note: After creating the Sendbird application, please be sure to contact [sales](https://get.sendbird.com/talk-to-sales.html) to enable the Desk menu onto the dashboard. Currently, Sendbird Desk is available only for free-trial or Enterprise plans.
 
