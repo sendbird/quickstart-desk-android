@@ -10,7 +10,7 @@ Built with Sendbird Chat platform, Sendbird Desk is a live chat customer support
 
 ## Before getting started
 
-This section provides the pre-installation steps for Sendbird Desk for Android sample app. 
+This section shows you the prerequisites you need for testing Sendbird Desk for Android sample app.
 
 ### Requirements
 
@@ -29,11 +29,7 @@ Following the previous instructions will allow you to experience the sample app 
 
 ## Getting started
 
-If you're familiar with external libraries or SDKs, installing the Desk SDK is an easy and straightforward process. 
-
-### Create a project
-
-Create a project to get started. Currently Sendbird Desk only supports `Java`.
+This section explains the steps you need to take before testing the sample app
 
 ### Install Desk for Android
 
