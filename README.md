@@ -31,7 +31,7 @@ Following the previous instructions will allow you to experience the sample app 
 
 This section explains the steps you need to take before testing the sample app
 
-### Use
+### Use Gradle
 
 You can install Desk for Android as follows: 
 
