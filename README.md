@@ -15,7 +15,7 @@ This section provides the pre-installation steps for Sendbird Desk for Android s
 ### Requirements
 
 - Android 4.0 or higher
-- Chat SDK for Android 3.0.90 or higher
+- Chat SDK for Android 3.0.55 or higher
 
 ### Try the sample app applied with your data 
 
