@@ -15,7 +15,7 @@ This section shows you the prerequisites you need for testing Sendbird Desk for 
 ### Requirements
 
 - Android 4.0 or higher
-- Chat SDK for Android 3.0.55 or higher
+- [Chat SDK for Android](https://github.com/sendbird/SendBird-SDK-Android/tree/master/com/sendbird/sdk/sendbird-android-sdk) 3.0.55 or higher
 
 ### Try the sample app applied with your data 
 
