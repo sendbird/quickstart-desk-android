@@ -6,6 +6,10 @@
 
 Built with Sendbird Chat platform, Sendbird Desk is a live chat customer support that offers customer satisfaction through enhanced engagement. Through its integration, Desk SDK for Android enables you to easily customize your ticketing support system with a UI theme, thereby elevating your overall customers’ experience. For example, you can modify the inbox - a management tool and storage unit for the agents’ and tickets’ conversations - to fit within your color scheme and layout.
 
+### More about Sendbird Desk for Android
+
+Find out more about Sendbird Desk for Android on [Desk for Android doc](https://sendbird.com/docs/desk/v1/android/getting-started/about-desk-sdk). If you need any help in resolving any issues or have questions, visit [our community](https://community.sendbird.com).
+
 <br />
 
 ## Before getting started
