@@ -37,25 +37,29 @@ This section explains how to install Desk SDK for Android before testing the sam
 
 ### Install Desk SDK for Android
 
-Using `Gradle`, you can install the Desk SDK as follows: 
+Installing the Chat SDK is simple if you're familiar with using external libraries or SDKs. First, add the following code to your **root** `build.gradle` file:
 
-1. Add the following lines to your project-level `build.gradle` file.
 ```gradle
-repositories {
-    maven { url "https://raw.githubusercontent.com/sendbird/SendBird-SDK-Android/master/" }
-    maven { url "https://raw.githubusercontent.com/sendbird/SendBird-Desk-SDK-Android/master/" }
+allprojects {
+    repositories {
+        ...
+        maven { url "https://repo.sendbird.com/public/maven" }
+    }
 }
 ```
 
-2. And then add the following lines to your app-level `build.gradle` file.
+> **Note**: Make sure the above code block isn't added to your module `bundle.gradle` file.
+
+Then, add the dependency to the project's top-level `build.gradle` file.
+
 ```gradle
 dependencies {
-    implementation 'com.sendbird.sdk:sendbird-android-sdk:3.0.141'
-    implementation 'com.sendbird.sdk:sendbird-desk-android-sdk:1.0.9'
+    implementation 'com.sendbird.sdk:sendbird-android-sdk:3.0.160'
+    implementation 'com.sendbird.sdk:sendbird-desk-android-sdk:1.0.12'
 }
 ```
 
-<br />
+> **Note**: Desk SDK versions `1.0.12` or lower can be downloaded from JCenter until February 1, 2022. SDK versions higher than `1.0.12` will be available on Sendbird's remote repository.
 
 ## For further reference
 
