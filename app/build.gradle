@@ -34,7 +34,7 @@ dependencies {
     implementation 'com.google.firebase:firebase-messaging:17.3.4'
 
     implementation 'com.sendbird.sdk:sendbird-android-sdk:3.0.160'
-    implementation 'com.sendbird.sdk:sendbird-desk-android-sdk:1.0.12'
+    implementation 'com.sendbird.sdk:sendbird-desk-android-sdk:1.0.14'
 }
 
 apply plugin: 'com.google.gms.google-services'
