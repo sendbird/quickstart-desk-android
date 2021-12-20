@@ -17,8 +17,7 @@ buildscript {
 allprojects {
     repositories {
         jcenter()
-        maven { url "https://raw.githubusercontent.com/sendbird/SendBird-SDK-Android/master/" }
-        maven { url "https://raw.githubusercontent.com/sendbird/SendBird-Desk-SDK-Android/master/" }
+        maven { url "https://repo.sendbird.com/public/maven" }
         maven {
             url 'https://maven.google.com/'
             name 'Google'

@@ -105,6 +105,11 @@
 
             </LinearLayout>
 
+            <android.support.v7.widget.RecyclerView
+                android:id="@+id/recycler_view_faq"
+                android:layout_width="264dp"
+                android:layout_height="wrap_content" />
+
         </LinearLayout>
 
     </LinearLayout>

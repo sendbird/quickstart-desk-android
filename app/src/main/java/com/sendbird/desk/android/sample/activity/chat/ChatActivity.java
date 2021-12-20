@@ -1,5 +1,8 @@
 package com.sendbird.desk.android.sample.activity.chat;
 
+import static com.sendbird.desk.android.sample.desk.DeskManager.CONNECTION_HANDLER_ID_CHAT;
+import static com.sendbird.desk.android.sample.desk.DeskManager.TICKET_HANDLER_ID_CHAT;
+
 import android.Manifest;
 import android.app.Activity;
 import android.app.AlertDialog;
@@ -26,8 +29,11 @@ import android.support.v4.content.ContextCompat;
 import android.support.v4.content.FileProvider;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
 import android.text.Editable;
+import android.text.TextUtils;
 import android.text.TextWatcher;
 import android.text.util.Linkify;
 import android.view.ContextThemeWrapper;
@@ -56,6 +62,8 @@ import com.sendbird.android.SendBird;
 import com.sendbird.android.SendBirdException;
 import com.sendbird.android.User;
 import com.sendbird.android.UserMessage;
+import com.sendbird.desk.android.FAQData;
+import com.sendbird.desk.android.SendBirdDesk;
 import com.sendbird.desk.android.Ticket;
 import com.sendbird.desk.android.sample.R;
 import com.sendbird.desk.android.sample.activity.inbox.InboxActivity;
@@ -83,9 +91,6 @@ import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.List;
 import java.util.Map;
-
-import static com.sendbird.desk.android.sample.desk.DeskManager.CONNECTION_HANDLER_ID_CHAT;
-import static com.sendbird.desk.android.sample.desk.DeskManager.TICKET_HANDLER_ID_CHAT;
 
 public class ChatActivity extends AppCompatActivity {
 
@@ -1546,6 +1551,7 @@ public class ChatActivity extends AppCompatActivity {
 
                         viewHolder.setView("txt_time", convertView.findViewById(R.id.txt_time));
                         viewHolder.setView("view_next_ungrouping", convertView.findViewById(R.id.view_next_ungrouping));
+                        viewHolder.setView("recycler_view_faq", convertView.findViewById(R.id.recycler_view_faq));
                         convertView.setTag(viewHolder);
                         break;
 
@@ -1772,6 +1778,7 @@ public class ChatActivity extends AppCompatActivity {
 
                     TextView txtTime = viewHolder.getView("txt_time", TextView.class);
                     View nextUngroup = viewHolder.getView("view_next_ungrouping");
+                    RecyclerView faqRecyclerView = viewHolder.getView("recycler_view_faq", RecyclerView.class);
 
                     if (isNewDay) {
                         txtDate.setText(DateUtils.formatDate(mContext, userMessage.getCreatedAt()));
@@ -1800,6 +1807,30 @@ public class ChatActivity extends AppCompatActivity {
                         }
                     } else {
                         urlPreviewContainer.setVisibility(View.GONE);
+                    }
+
+                    final FAQData faqData = SendBirdDesk.generateFAQData(userMessage);
+                    if (faqData != null && faqData.getFaqFileId() >= 0 &&
+                            faqData.getFaqResults() != null && !faqData.getFaqResults().isEmpty()) {
+                        faqRecyclerView.setVisibility(View.VISIBLE);
+                        final FAQResultAdapter adapter = new FAQResultAdapter();
+                        faqRecyclerView.setLayoutManager(new LinearLayoutManager(ChatActivity.this));
+                        faqRecyclerView.setAdapter(adapter);
+                        adapter.setItems(faqData.getFaqResults());
+                        adapter.setOnItemClickListener(new FAQResultAdapter.OnItemClickListener() {
+                            @Override
+                            public void onItemClicked(@NonNull FAQData.FAQResult result) {
+                                if (TextUtils.isEmpty(result.getUrl())) return;
+                                Uri webpage = Uri.parse(result.getUrl());
+                                Intent intent = new Intent(Intent.ACTION_VIEW, webpage);
+                                intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                                if (intent.resolveActivity(getPackageManager()) != null) {
+                                    startActivity(intent);
+                                }
+                            }
+                        });
+                    } else {
+                        faqRecyclerView.setVisibility(View.GONE);
                     }
 
                     if (!isContinuousToNext) {
@@ -2455,6 +2486,82 @@ public class ChatActivity extends AppCompatActivity {
 
             private <T> T getView(String k, Class<T> type) {
                 return type.cast(getView(k));
+            }
+        }
+    }
+
+    private static class FAQResultAdapter extends RecyclerView.Adapter<FAQResultAdapter.FAQResultViewHolder> {
+        public interface OnItemClickListener {
+            void onItemClicked(@NonNull FAQData.FAQResult result);
+        }
+
+        @NonNull
+        private final List<FAQData.FAQResult> items = new ArrayList<>();
+        @Nullable
+        private OnItemClickListener listener;
+
+        @NonNull
+        @Override
+        public FAQResultViewHolder onCreateViewHolder(@NonNull ViewGroup viewGroup, int i) {
+            return new FAQResultViewHolder(LayoutInflater.from(viewGroup.getContext()).inflate(R.layout.list_item_faq_result, viewGroup, false), new FAQResultViewHolder.OnViewHolderClickListener() {
+                @Override
+                public void onClicked(@NonNull RecyclerView.ViewHolder viewHolder) {
+                    if (listener != null) listener.onItemClicked(items.get(viewHolder.getAdapterPosition()));
+                }
+            });
+        }
+
+        @Override
+        public void onBindViewHolder(@NonNull final FAQResultViewHolder faqResultViewHolder, int i) {
+            faqResultViewHolder.bind(items.get(i));
+        }
+
+        @Override
+        public int getItemCount() {
+            return items.size();
+        }
+
+        public void setItems(@NonNull List<FAQData.FAQResult> items) {
+            this.items.clear();
+            this.items.addAll(items);
+            notifyDataSetChanged();
+        }
+
+        public void setOnItemClickListener(@Nullable OnItemClickListener listener) {
+            this.listener = listener;
+        }
+
+        private static class FAQResultViewHolder extends RecyclerView.ViewHolder {
+            public interface OnViewHolderClickListener {
+                void onClicked(@NonNull RecyclerView.ViewHolder viewHolder);
+            }
+
+            private final TextView questionTextView;
+            private final TextView answerTextView;
+            private final ImageView imageView;
+
+            public FAQResultViewHolder(@NonNull View itemView, @Nullable final OnViewHolderClickListener listener) {
+                super(itemView);
+                questionTextView = itemView.findViewById(R.id.txt_question);
+                answerTextView = itemView.findViewById(R.id.txt_answer);
+                imageView = itemView.findViewById(R.id.img);
+                itemView.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        if (listener != null) listener.onClicked(FAQResultViewHolder.this);
+                    }
+                });
+            }
+
+            public void bind(final FAQData.FAQResult result) {
+                questionTextView.setText(result.getQuestion());
+                answerTextView.setText(result.getAnswer());
+                if (!TextUtils.isEmpty(result.getImageUrl())) {
+                    imageView.setVisibility(View.VISIBLE);
+                    ImageUtils.displayImageFromUrl(itemView.getContext(), result.getImageUrl(), imageView, null);
+                } else {
+                    imageView.setVisibility(View.GONE);
+                }
             }
         }
     }
