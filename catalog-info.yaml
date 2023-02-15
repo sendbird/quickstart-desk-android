@@ -1,0 +1,12 @@
+apiVersion: backstage.io/v1alpha1
+kind: Component
+metadata:
+  name: quickstart-desk-android
+  description: Desk sample for Android
+  annotations:
+    github.com/project-slug: sendbird/quickstart-desk-android
+spec:
+  type: library
+  lifecycle: production
+  owner: dep-client-platform
+  system: sendbird-desk
