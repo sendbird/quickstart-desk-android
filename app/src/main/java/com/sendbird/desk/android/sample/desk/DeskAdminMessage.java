@@ -1,7 +1,9 @@
 package com.sendbird.desk.android.sample.desk;
 
-import com.sendbird.android.AdminMessage;
-import com.sendbird.android.BaseMessage;
+import androidx.annotation.Nullable;
+
+import com.sendbird.android.message.AdminMessage;
+import com.sendbird.android.message.BaseMessage;
 import com.sendbird.android.shadow.com.google.gson.JsonObject;
 import com.sendbird.android.shadow.com.google.gson.JsonParser;
 
@@ -14,16 +16,16 @@ public class DeskAdminMessage {
 
 
     //+ public methods
-    public static boolean is(BaseMessage message) {
-        return (message != null && message instanceof AdminMessage && ((AdminMessage) message).getCustomType().equals(ADMIN_MESSAGE_CUSTOM_TYPE));
+    public static boolean is(@Nullable BaseMessage message) {
+        return (message instanceof AdminMessage && ((AdminMessage) message).getCustomType().equals(ADMIN_MESSAGE_CUSTOM_TYPE));
     }
 
-    public static boolean isAssignType(BaseMessage message) {
+    public static boolean isAssignType(@Nullable BaseMessage message) {
         boolean result = false;
         if (is(message)) {
             String data = ((AdminMessage)message).getData();
-            if (data != null && data.length() > 0) {
-                JsonObject dataObj = new JsonParser().parse(data).getAsJsonObject();
+            if (data.length() > 0) {
+                JsonObject dataObj = (JsonObject) JsonParser.parseString(data);
                 String type = dataObj.get("type").getAsString();
                 if (type.equals(EVENT_TYPE_ASSIGN)) {
                     result = true;
@@ -33,12 +35,12 @@ public class DeskAdminMessage {
         return result;
     }
 
-    public static boolean isTransferType(BaseMessage message) {
+    public static boolean isTransferType(@Nullable BaseMessage message) {
         boolean result = false;
         if (is(message)) {
             String data = ((AdminMessage)message).getData();
-            if (data != null && data.length() > 0) {
-                JsonObject dataObj = new JsonParser().parse(data).getAsJsonObject();
+            if (data.length() > 0) {
+                JsonObject dataObj = (JsonObject) JsonParser.parseString(data);
                 String type = dataObj.get("type").getAsString();
                 if (type.equals(EVENT_TYPE_TRANSFER)) {
                     result = true;
@@ -48,12 +50,12 @@ public class DeskAdminMessage {
         return result;
     }
 
-    public static boolean isCloseType(BaseMessage message) {
+    public static boolean isCloseType(@Nullable BaseMessage message) {
         boolean result = false;
         if (is(message)) {
             String data = ((AdminMessage)message).getData();
-            if (data != null && data.length() > 0) {
-                JsonObject dataObj = new JsonParser().parse(data).getAsJsonObject();
+            if (data.length() > 0) {
+                JsonObject dataObj = (JsonObject) JsonParser.parseString(data);
                 String type = dataObj.get("type").getAsString();
                 if (type.equals(EVENT_TYPE_CLOSE)) {
                     result = true;

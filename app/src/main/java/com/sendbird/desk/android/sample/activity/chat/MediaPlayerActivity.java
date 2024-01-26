@@ -25,17 +25,17 @@ import android.media.MediaPlayer.OnBufferingUpdateListener;
 import android.media.MediaPlayer.OnCompletionListener;
 import android.media.MediaPlayer.OnPreparedListener;
 import android.media.MediaPlayer.OnVideoSizeChangedListener;
-import android.os.Build;
 import android.os.Bundle;
-import android.support.annotation.NonNull;
-import android.support.v4.app.ActivityCompat;
-import android.support.v4.content.ContextCompat;
-import android.view.MotionEvent;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 import android.view.View;
 import android.view.ViewTreeObserver;
 import android.widget.ProgressBar;
+
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
 
 import com.sendbird.desk.android.sample.R;
 import com.sendbird.desk.android.sample.app.Event;
@@ -71,7 +71,7 @@ public class MediaPlayerActivity extends Activity implements
     private int mCurrentPosition = -1;
 
     @Override
-    public void onCreate(Bundle icicle) {
+    public void onCreate(@Nullable Bundle icicle) {
         super.onCreate(icicle);
         setContentView(R.layout.activity_media_player);
 
@@ -79,11 +79,12 @@ public class MediaPlayerActivity extends Activity implements
         mProgressBar = (ProgressBar) findViewById(R.id.progress_bar);
         mSurfaceHolder = mSurfaceView.getHolder();
         mSurfaceHolder.addCallback(this);
-        mSurfaceHolder.setType(SurfaceHolder.SURFACE_TYPE_PUSH_BUFFERS);
 
         Bundle extras = getIntent().getExtras();
-        mUrl = extras.getString("url");
-        mName = extras.getString("name");
+        if (extras != null) {
+            mUrl = extras.getString("url");
+            mName = extras.getString("name");
+        }
 
         mProgressBar.setVisibility(View.VISIBLE);
         initToolbar();
@@ -93,41 +94,30 @@ public class MediaPlayerActivity extends Activity implements
         mContainer = findViewById(R.id.layout_media_player);
         final View buttonContainer = findViewById(R.id.layout_btn);
 
-        findViewById(R.id.btn_close).setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                finish();
+        findViewById(R.id.btn_close).setOnClickListener(view -> finish());
+
+        findViewById(R.id.btn_download).setOnClickListener(view -> {
+            if (ContextCompat.checkSelfPermission(MediaPlayerActivity.this, Manifest.permission.WRITE_EXTERNAL_STORAGE)
+                    != PackageManager.PERMISSION_GRANTED) {
+                ActivityCompat.requestPermissions(
+                        MediaPlayerActivity.this,
+                        new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE},
+                        PERMISSION_WRITE_EXTERNAL_STORAGE
+                );
+            } else {
+                download();
             }
         });
 
-        findViewById(R.id.btn_download).setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                if (ContextCompat.checkSelfPermission(MediaPlayerActivity.this, Manifest.permission.WRITE_EXTERNAL_STORAGE)
-                        != PackageManager.PERMISSION_GRANTED) {
-                    ActivityCompat.requestPermissions(
-                            MediaPlayerActivity.this,
-                            new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE},
-                            PERMISSION_WRITE_EXTERNAL_STORAGE
-                    );
-                } else {
-                    download();
-                }
+        mContainer.setOnTouchListener((view, motionEvent) -> {
+            if (mShowButtons) {
+                buttonContainer.setVisibility(View.GONE);
+                mShowButtons = false;
+            } else {
+                buttonContainer.setVisibility(View.VISIBLE);
+                mShowButtons = true;
             }
-        });
-
-        mContainer.setOnTouchListener(new View.OnTouchListener() {
-            @Override
-            public boolean onTouch(View view, MotionEvent motionEvent) {
-                if (mShowButtons) {
-                    buttonContainer.setVisibility(View.GONE);
-                    mShowButtons = false;
-                } else {
-                    buttonContainer.setVisibility(View.VISIBLE);
-                    mShowButtons = true;
-                }
-                return false;
-            }
+            return view.performClick();
         });
 
         setContainerLayoutListener(false);
@@ -137,11 +127,7 @@ public class MediaPlayerActivity extends Activity implements
         mContainer.getViewTreeObserver().addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
             @Override
             public void onGlobalLayout() {
-                if (Build.VERSION.SDK_INT >= 16) {
-                    mContainer.getViewTreeObserver().removeOnGlobalLayoutListener(this);
-                } else {
-                    mContainer.getViewTreeObserver().removeGlobalOnLayoutListener(this);
-                }
+                mContainer.getViewTreeObserver().removeOnGlobalLayoutListener(this);
 
                 mIsContainerSizeKnown = true;
                 if (screenRotated) {
@@ -155,11 +141,9 @@ public class MediaPlayerActivity extends Activity implements
 
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
-        switch (requestCode) {
-            case PERMISSION_WRITE_EXTERNAL_STORAGE: {
-                if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                    download();
-                }
+        if (requestCode == PERMISSION_WRITE_EXTERNAL_STORAGE) {
+            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                download();
             }
         }
     }
@@ -214,13 +198,13 @@ public class MediaPlayerActivity extends Activity implements
         tryToStartVideoPlayback();
     }
 
-    public void surfaceChanged(SurfaceHolder surfaceholder, int i, int j, int k) {
+    public void surfaceChanged(@NonNull SurfaceHolder surfaceholder, int i, int j, int k) {
     }
 
-    public void surfaceDestroyed(SurfaceHolder surfaceholder) {
+    public void surfaceDestroyed(@NonNull SurfaceHolder surfaceholder) {
     }
 
-    public void surfaceCreated(SurfaceHolder holder) {
+    public void surfaceCreated(@NonNull SurfaceHolder holder) {
         playVideo();
     }
 
@@ -308,7 +292,7 @@ public class MediaPlayerActivity extends Activity implements
     }
 
     @Override
-    public void onConfigurationChanged(Configuration newConfig) {
+    public void onConfigurationChanged(@NonNull Configuration newConfig) {
         super.onConfigurationChanged(newConfig);
         setContainerLayoutListener(true);
     }

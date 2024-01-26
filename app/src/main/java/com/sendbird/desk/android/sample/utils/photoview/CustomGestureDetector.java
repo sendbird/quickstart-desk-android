@@ -21,6 +21,8 @@ import android.view.ScaleGestureDetector;
 import android.view.VelocityTracker;
 import android.view.ViewConfiguration;
 
+import androidx.annotation.NonNull;
+
 /**
  * Does a whole lot of gesture detecting.
  */
@@ -38,7 +40,7 @@ class CustomGestureDetector {
     private float mLastTouchY;
     private final float mTouchSlop;
     private final float mMinimumVelocity;
-    private OnGestureListener mListener;
+    private final OnGestureListener mListener;
 
     CustomGestureDetector(Context context, OnGestureListener listener) {
         final ViewConfiguration configuration = ViewConfiguration
@@ -62,12 +64,12 @@ class CustomGestureDetector {
             }
 
             @Override
-            public boolean onScaleBegin(ScaleGestureDetector detector) {
+            public boolean onScaleBegin(@NonNull ScaleGestureDetector detector) {
                 return true;
             }
 
             @Override
-            public void onScaleEnd(ScaleGestureDetector detector) {
+            public void onScaleEnd(@NonNull ScaleGestureDetector detector) {
                 // NO-OP
             }
         };

@@ -10,28 +10,14 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
-import android.content.pm.ResolveInfo;
 import android.content.res.TypedArray;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.media.ExifInterface;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
 import android.provider.MediaStore;
-import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
-import android.support.design.widget.BottomSheetDialog;
-import android.support.design.widget.Snackbar;
-import android.support.v4.app.ActivityCompat;
-import android.support.v4.content.ContextCompat;
-import android.support.v4.content.FileProvider;
-import android.support.v7.app.ActionBar;
-import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.LinearLayoutManager;
-import android.support.v7.widget.RecyclerView;
-import android.support.v7.widget.Toolbar;
 import android.text.Editable;
 import android.text.TextUtils;
 import android.text.TextWatcher;
@@ -53,15 +39,40 @@ import android.widget.ListView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
-import com.sendbird.android.AdminMessage;
-import com.sendbird.android.BaseChannel;
-import com.sendbird.android.BaseMessage;
-import com.sendbird.android.FileMessage;
-import com.sendbird.android.GroupChannel;
-import com.sendbird.android.SendBird;
-import com.sendbird.android.SendBirdException;
-import com.sendbird.android.User;
-import com.sendbird.android.UserMessage;
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.PickVisualMediaRequest;
+import androidx.activity.result.contract.ActivityResultContracts;
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.appcompat.app.ActionBar;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.Toolbar;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
+import androidx.core.content.FileProvider;
+import androidx.core.content.res.ResourcesCompat;
+import androidx.exifinterface.media.ExifInterface;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
+
+import com.google.android.material.bottomsheet.BottomSheetDialog;
+import com.google.android.material.snackbar.Snackbar;
+import com.sendbird.android.SendbirdChat;
+import com.sendbird.android.channel.BaseChannel;
+import com.sendbird.android.channel.GroupChannel;
+import com.sendbird.android.channel.MessageTypeFilter;
+import com.sendbird.android.exception.SendbirdException;
+import com.sendbird.android.handler.FileMessageHandler;
+import com.sendbird.android.message.AdminMessage;
+import com.sendbird.android.message.BaseMessage;
+import com.sendbird.android.message.FileMessage;
+import com.sendbird.android.message.Thumbnail;
+import com.sendbird.android.message.ThumbnailSize;
+import com.sendbird.android.message.UserMessage;
+import com.sendbird.android.params.FileMessageCreateParams;
+import com.sendbird.android.params.MessageListParams;
+import com.sendbird.android.user.Sender;
+import com.sendbird.android.user.User;
 import com.sendbird.desk.android.FAQData;
 import com.sendbird.desk.android.SendBirdDesk;
 import com.sendbird.desk.android.Ticket;
@@ -77,7 +88,6 @@ import com.sendbird.desk.android.sample.utils.DateUtils;
 import com.sendbird.desk.android.sample.utils.FileUtils;
 import com.sendbird.desk.android.sample.utils.PrefUtils;
 import com.sendbird.desk.android.sample.utils.image.ImageUtils;
-import com.sendbird.desk.android.sample.utils.ucrop.UCrop;
 import com.sendbird.desk.android.sample.utils.web.BetterLinkMovementMethod;
 import com.sendbird.desk.android.sample.utils.web.WebUtils;
 
@@ -97,11 +107,6 @@ public class ChatActivity extends AppCompatActivity {
     public static final String EXTRA_TITLE = "EXTRA_TITLE";
     public static final String EXTRA_USER_NAME = "EXTRA_USER_NAME";
     public static final String EXTRA_CHANNEL_URL = "EXTRA_CHANNEL_URL";
-
-    private static final int INTENT_REQUEST_CHOOSE_MEDIA = 0xf0;
-    private static final int INTENT_REQUEST_CAMERA = 0xf1;
-    private static final int INTENT_REQUEST_TO_UPLOAD_VIDEO = 0xf2;
-    private static final int INTENT_REQUEST_TO_RECORD_VIDEO = 0xf3;
 
     private static final int PERMISSION_WRITE_EXTERNAL_STORAGE_UPLOAD = 0xf0;
     private static final int PERMISSION_WRITE_EXTERNAL_STORAGE_DOWNLOAD = 0xf1;
@@ -139,9 +144,7 @@ public class ChatActivity extends AppCompatActivity {
     private boolean mLoading;
     private boolean mHasPrev;
 
-    private boolean mRequestingCamera = false;
     private Uri mTempPhotoUri;
-    private Uri mTempPhotoPreviewUri;
     private Uri mTempVideoUri;
     private Uri mTempFileUri;
 
@@ -149,6 +152,52 @@ public class ChatActivity extends AppCompatActivity {
 
     private String mTitle;
     private String mUserName;
+
+    // Registers a photo picker activity launcher in single-select mode.
+    private final ActivityResultLauncher<PickVisualMediaRequest> pickImage =
+            registerForActivityResult(new ActivityResultContracts.PickVisualMedia(), uri -> {
+                // If user has successfully chosen the image, show a dialog to confirm upload.
+                if (uri == null) {
+                    return;
+                }
+
+                Hashtable<String, Object> info = FileUtils.getFileInfo(ChatActivity.this, uri);
+                if (info != null) {
+                    String mime = (String)info.get("mime");
+                    if (mime != null && mime.toLowerCase().contains("gif")) {
+                        sendFileMessage(uri, FILE_TYPE_ALL);
+                        return;
+                    }
+                }
+
+                sendFileMessage(uri, FILE_TYPE_IMAGE);
+            });
+
+    // Registers a video picker activity launcher in single-select mode.
+    private final ActivityResultLauncher<PickVisualMediaRequest> pickVideo =
+            registerForActivityResult(new ActivityResultContracts.PickVisualMedia(), uri -> {
+                if (uri == null) {
+                    return;
+                }
+
+                sendFileMessage(uri, FILE_TYPE_VIDEO);
+            });
+
+    private final ActivityResultLauncher<Intent> takeCameraLauncher = registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), result -> {
+        int resultCode = result.getResultCode();
+
+        if (resultCode != RESULT_OK) return;
+
+        sendFileMessage(mTempPhotoUri, FILE_TYPE_IMAGE);
+    });
+
+    private final ActivityResultLauncher<Intent> takeVideoLauncher = registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), result -> {
+        int resultCode = result.getResultCode();
+
+        if (resultCode != RESULT_OK) return;
+
+        sendFileMessage(mTempVideoUri, FILE_TYPE_VIDEO);
+    });
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -193,7 +242,7 @@ public class ChatActivity extends AppCompatActivity {
             actionBar.setDisplayHomeAsUpEnabled(true);
 
             TypedArray ta = obtainStyledAttributes(new int[]{R.attr.deskInboxIcon});
-            actionBar.setHomeAsUpIndicator(getResources().getDrawable(ta.getResourceId(0, R.drawable.btn_inbox)));
+            actionBar.setHomeAsUpIndicator(ResourcesCompat.getDrawable(getResources(), ta.getResourceId(0, R.drawable.btn_inbox), null));
             ta.recycle();
         }
     }
@@ -259,92 +308,69 @@ public class ChatActivity extends AppCompatActivity {
                 }
             }
         });
-        mEditTxtReply.setOnKeyListener(new View.OnKeyListener() {
-            @Override
-            public boolean onKey(View v, int keyCode, KeyEvent event) {
-                if (keyCode == KeyEvent.KEYCODE_ENTER) {
-                    // Sends message.
-                    if (event.getAction() == KeyEvent.ACTION_DOWN) {
-                        String userInput = mEditTxtReply.getText().toString();
-
-                        if (userInput == null || userInput.length() <= 0) {
-                            return true;
-                        }
-
-                        sendUserMessage(userInput);
-                        mEditTxtReply.setText("");
-
-                        if (mChannel != null) {
-                            mChannel.endTyping();
-                        }
-                    }
-                    return true; // Do not hide keyboard.
-                }
-                return false;
-            }
-        });
-
-        mBtnSend.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
+        mEditTxtReply.setOnKeyListener((v, keyCode, event) -> {
+            if (keyCode == KeyEvent.KEYCODE_ENTER) {
                 // Sends message.
-                String userInput = mEditTxtReply.getText().toString();
+                if (event.getAction() == KeyEvent.ACTION_DOWN) {
+                    String userInput = mEditTxtReply.getText().toString();
 
-                if (userInput == null || userInput.length() <= 0) {
-                    return;
+                    if (userInput.length() == 0) {
+                        return true;
+                    }
+
+                    sendUserMessage(userInput);
+                    mEditTxtReply.setText("");
+
+                    if (mChannel != null) {
+                        mChannel.endTyping();
+                    }
                 }
+                return true; // Do not hide keyboard.
+            }
+            return false;
+        });
 
-                sendUserMessage(userInput);
-                mEditTxtReply.setText("");
+        mBtnSend.setOnClickListener(v -> {
+            // Sends message.
+            String userInput = mEditTxtReply.getText().toString();
 
-                if (mChannel != null) {
-                    mChannel.endTyping();
-                }
+            if (userInput.length() == 0) {
+                return;
+            }
+
+            sendUserMessage(userInput);
+            mEditTxtReply.setText("");
+
+            if (mChannel != null) {
+                mChannel.endTyping();
             }
         });
 
-        mBtnAttach.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                mBottomSheetDialog.show();
-            }
-        });
+        mBtnAttach.setOnClickListener(v -> mBottomSheetDialog.show());
     }
 
     private void initBottomSheetDialog() {
         mBottomSheetDialog = new BottomSheetDialog(ChatActivity.this);
         View view = getLayoutInflater().inflate(R.layout.fragment_content_chooser, null);
 
-        (view.findViewById(R.id.layout_gallery)).setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                requestMedia();
-                mBottomSheetDialog.dismiss();
-            }
+        (view.findViewById(R.id.layout_gallery)).setOnClickListener(v -> {
+            requestMedia();
+            mBottomSheetDialog.dismiss();
         });
 
-        (view.findViewById(R.id.layout_camera)).setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                requestCamera();
-                mBottomSheetDialog.dismiss();
-            }
+        (view.findViewById(R.id.layout_camera)).setOnClickListener(v -> {
+            requestCamera();
+            mBottomSheetDialog.dismiss();
         });
 
-        (view.findViewById(R.id.layout_upload_video)).setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                requestToUploadVideo();
-                mBottomSheetDialog.dismiss();
-            }
+        (view.findViewById(R.id.layout_upload_video)).setOnClickListener(v -> {
+            requestToUploadVideo();
+            mBottomSheetDialog.dismiss();
         });
 
-        (view.findViewById(R.id.layout_take_video)).setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                requestToRecordVideo();
-                mBottomSheetDialog.dismiss();
-            }
+        (view.findViewById(R.id.layout_take_video)).setOnClickListener(v -> {
+            requestToRecordVideo();
+            mBottomSheetDialog.dismiss();
         });
         mBottomSheetDialog.setContentView(view);
     }
@@ -360,7 +386,7 @@ public class ChatActivity extends AppCompatActivity {
         if (mTicket != null) {
             Map<String, String> data = new HashMap<>();
             data.put("title", mTicket.getTitle());
-            data.put("status", mTicket.getStatus());
+            data.put("status", mTicket.getStatus2());
             data.put("ticket_id", String.valueOf(mTicket.getId()));
             Event.onEvent(Event.EventListener.CHAT_ENTER, data);
         }
@@ -369,7 +395,7 @@ public class ChatActivity extends AppCompatActivity {
 
         DeskManager.addTicketHandler(TICKET_HANDLER_ID_CHAT, new DeskManager.TicketHandler() {
             @Override
-            public void onMessageReceived(BaseChannel baseChannel, BaseMessage baseMessage) {
+            public void onMessageReceived(@NonNull BaseChannel baseChannel, @NonNull BaseMessage baseMessage) {
                 if (mChannelUrl != null && mChannelUrl.equals(baseChannel.getUrl())) {
                     // If the first message comes (This must be welcome or away message).
                     if (mListAdapter == null) {
@@ -381,7 +407,7 @@ public class ChatActivity extends AppCompatActivity {
                     }
 
                     if (mChannel != null) {
-                        mChannel.markAsRead();
+                        mChannel.markAsRead(null);
                     }
 
                     if (DeskAdminMessage.is(baseMessage)) {
@@ -403,7 +429,7 @@ public class ChatActivity extends AppCompatActivity {
             }
 
             @Override
-            public void onMessageUpdated(BaseChannel channel, BaseMessage message) {
+            public void onMessageUpdated(@NonNull BaseChannel channel, @NonNull BaseMessage message) {
                 if (channel.getUrl().equals(mChannelUrl)) {
                     mListAdapter.replaceMessage(message);
                     mListAdapter.notifyDataSetChanged();
@@ -411,12 +437,7 @@ public class ChatActivity extends AppCompatActivity {
             }
         });
 
-        DeskConnectionManager.addConnectionManagementHandler(CONNECTION_HANDLER_ID_CHAT, new DeskConnectionManager.ConnectionManagementHandler() {
-            @Override
-            public void onConnected(boolean reconnect) {
-                refresh();
-            }
-        });
+        DeskConnectionManager.addConnectionManagementHandler(CONNECTION_HANDLER_ID_CHAT, reconnect -> refresh());
     }
 
     @Override
@@ -434,7 +455,7 @@ public class ChatActivity extends AppCompatActivity {
     }
 
     @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
+    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
         if (item.getItemId() == android.R.id.home) {
             Intent intent = new Intent(this, InboxActivity.class);
             intent.addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
@@ -447,71 +468,14 @@ public class ChatActivity extends AppCompatActivity {
     }
 
     @Override
-    protected void onSaveInstanceState(Bundle outState) {
+    protected void onSaveInstanceState(@NonNull Bundle outState) {
         outState.putString(EXTRA_CHANNEL_URL, mChannelUrl);
         super.onSaveInstanceState(outState);
     }
 
     @Override
-    public void onActivityResult(int requestCode, int resultCode, final Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
-
-        if (requestCode == INTENT_REQUEST_CHOOSE_MEDIA && resultCode == Activity.RESULT_OK) {
-            // If user has successfully chosen the image, show a dialog to confirm upload.
-            if (data == null) {
-                return;
-            }
-
-            Uri uri = data.getData();
-            Hashtable<String, Object> info = FileUtils.getFileInfo(ChatActivity.this, uri);
-            if (info != null) {
-                String mime = (String)info.get("mime");
-                if (mime.toLowerCase().contains("gif")) {
-                    sendFileMessage(uri, FILE_TYPE_ALL);
-                    return;
-                }
-            }
-
-            previewPhoto(uri);
-        } else if (requestCode == INTENT_REQUEST_CAMERA && resultCode == Activity.RESULT_OK) {
-            if (!mRequestingCamera) {
-                return;
-            }
-
-            previewPhoto(mTempPhotoUri);
-            mRequestingCamera = false;
-        } else if (requestCode == UCrop.REQUEST_CROP) {
-            if (resultCode == Activity.RESULT_OK) {
-                sendFileMessage(UCrop.getOutput(data), FILE_TYPE_IMAGE);
-            } else if (resultCode == UCrop.RESULT_ERROR) {
-                UCrop.getError(data).printStackTrace();
-            }
-        } else if (requestCode == INTENT_REQUEST_TO_UPLOAD_VIDEO && resultCode == Activity.RESULT_OK) {
-            if (data == null) {
-                return;
-            }
-
-            sendFileMessage(data.getData(), FILE_TYPE_VIDEO);
-        } else if (requestCode == INTENT_REQUEST_TO_RECORD_VIDEO && resultCode == Activity.RESULT_OK) {
-            if (!mRequestingCamera) {
-                return;
-            }
-
-            sendFileMessage(mTempVideoUri, FILE_TYPE_VIDEO);
-            mRequestingCamera = false;
-        }
-    }
-
-    private void previewPhoto(Uri uri) {
-        if (uri != null) {
-            mTempPhotoPreviewUri = getTempFileUri(true, true);
-            UCrop.of(uri, mTempPhotoPreviewUri)
-                    .start(this);
-        }
-    }
-
-    @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
         switch (requestCode) {
             case PERMISSION_WRITE_EXTERNAL_STORAGE_UPLOAD:
                 if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
@@ -548,31 +512,28 @@ public class ChatActivity extends AppCompatActivity {
     }
 
     private void createTicket(String ticketTitle, String userName) {
-        Ticket.create(ticketTitle, userName, new Ticket.CreateHandler() {
-            @Override
-            public void onResult(final Ticket ticket, SendBirdException e) {
-                if (e != null) {
-                    mProgressBar.setVisibility(View.INVISIBLE);
-                    Snackbar.make(mView, R.string.desk_failed_opening_ticket, Snackbar.LENGTH_SHORT).show();
-                    return;
-                }
+        Ticket.create(ticketTitle, userName, (ticket, e) -> {
+            if (e != null) {
+                mProgressBar.setVisibility(View.INVISIBLE);
+                Snackbar.make(mView, R.string.desk_failed_opening_ticket, Snackbar.LENGTH_SHORT).show();
+                return;
+            }
 
-                mTicket = ticket;
-                mChannel = ticket.getChannel();
-                mChannelUrl = ticket.getChannel().getUrl();
+            mTicket = ticket;
+            mChannel = ticket.getChannel();
+            mChannelUrl = ticket.getChannel().getUrl();
 
-                ActionBar actionBar = getSupportActionBar();
-                if (actionBar != null) {
-                    actionBar.setTitle(mTicket.getTitle());
-                }
+            ActionBar actionBar = getSupportActionBar();
+            if (actionBar != null) {
+                actionBar.setTitle(mTicket.getTitle());
+            }
 
-                if (mTicket != null) {
-                    Map<String, String> data = new HashMap<>();
-                    data.put("title", mTicket.getTitle());
-                    data.put("status", mTicket.getStatus());
-                    data.put("ticket_id", String.valueOf(mTicket.getId()));
-                    Event.onEvent(Event.EventListener.CHAT_ENTER, data);
-                }
+            if (mTicket != null) {
+                Map<String, String> data = new HashMap<>();
+                data.put("title", mTicket.getTitle());
+                data.put("status", mTicket.getStatus2());
+                data.put("ticket_id", String.valueOf(mTicket.getId()));
+                Event.onEvent(Event.EventListener.CHAT_ENTER, data);
             }
         });
     }
@@ -582,35 +543,29 @@ public class ChatActivity extends AppCompatActivity {
             // Starts from startChat
             createTicket(mTitle, mUserName);
         } else if (mTicket != null) {
-            mTicket.refresh(new Ticket.RefreshHandler() {
-                @Override
-                public void onResult(Ticket ticket, SendBirdException e) {
-                    if (e != null) {
-                        e.printStackTrace();
-                        return;
-                    }
-
-                    doRefresh();
+            mTicket.refresh((ticket, e) -> {
+                if (e != null) {
+                    e.printStackTrace();
+                    return;
                 }
+
+                doRefresh();
             });
-        } else if (mChannelUrl != null) {
-            Ticket.getByChannelUrl(mChannelUrl, new Ticket.GetByChannelUrlHandler() {
-                @Override
-                public void onResult(Ticket ticket, SendBirdException e) {
-                    if (e != null) {
-                        e.printStackTrace();
-                        return;
-                    }
-
-                    mTicket = ticket;
-                    mChannel = ticket.getChannel();
-                    mChannelUrl = ticket.getChannel().getUrl();
-
-                    mListAdapter = new MessageListAdapter(ChatActivity.this);
-                    mListView.setAdapter(mListAdapter);
-
-                    doRefresh();
+        } else {
+            Ticket.getByChannelUrl(mChannelUrl, (ticket, e) -> {
+                if (e != null) {
+                    e.printStackTrace();
+                    return;
                 }
+
+                mTicket = ticket;
+                mChannel = ticket.getChannel();
+                mChannelUrl = ticket.getChannel().getUrl();
+
+                mListAdapter = new MessageListAdapter(ChatActivity.this);
+                mListView.setAdapter(mListAdapter);
+
+                doRefresh();
             });
         }
     }
@@ -625,22 +580,18 @@ public class ChatActivity extends AppCompatActivity {
         }
 
         if (mChannel != null) {
-            mChannel.markAsRead();
+            mChannel.markAsRead(null);
         }
 
-        loadPreviousMessages(true, new LoadPreviousMessagesHandler() {
-            @Override
-            public void onResult(SendBirdException e) {
-                if (e != null) {
-                    e.printStackTrace();
-                    return;
-                }
+        loadPreviousMessages(true, e -> {
+            if (e != null) {
+                e.printStackTrace();
             }
         });
     }
 
     interface LoadPreviousMessagesHandler {
-        void onResult(SendBirdException e);
+        void onResult(SendbirdException e);
     }
 
     private void loadPreviousMessages(final boolean refresh, final LoadPreviousMessagesHandler handler) {
@@ -657,68 +608,66 @@ public class ChatActivity extends AppCompatActivity {
         mLoading = true;
 
         if (mChannel != null) {
-            mChannel.getPreviousMessagesByTimestamp(mMinMessageTimestamp, false, 30, false,
-                    BaseChannel.MessageTypeFilter.ALL, null, new BaseChannel.GetMessagesHandler() {
-                        @Override
-                        public void onResult(List<BaseMessage> list, SendBirdException e) {
-                            mLoading = false;
-                            mProgressBar.setVisibility(View.INVISIBLE);
+            MessageListParams params = new MessageListParams();
+            params.setPreviousResultSize(30);
+            params.setInclusive(false);
+            params.setReverse(false);
+            params.setMessageTypeFilter(MessageTypeFilter.ALL);
+            mChannel.getMessagesByTimestamp(mMinMessageTimestamp, params, (list, e) -> {
+                mLoading = false;
+                mProgressBar.setVisibility(View.INVISIBLE);
 
-                            if (e != null) {
-                                Snackbar.make(mView, R.string.desk_failed_loading_messages, Snackbar.LENGTH_SHORT).show();
+                if (e != null) {
+                    Snackbar.make(mView, R.string.desk_failed_loading_messages, Snackbar.LENGTH_SHORT).show();
 
-                                if (handler != null) {
-                                    handler.onResult(e);
-                                }
-                                return;
-                            }
+                    if (handler != null) {
+                        handler.onResult(e);
+                    }
+                    return;
+                }
 
-                            if (list.size() == 0) {
-                                mHasPrev = false;
-                            }
+                if (list == null) return;
 
-                            if (refresh) {
-                                for (BaseMessage message : mListAdapter.mMessageList) {
-                                    if (mListAdapter.isTempMessage(message) || mListAdapter.isFailedMessage(message)) {
-                                        list.add(message);
-                                    }
-                                }
+                if (list.size() == 0) {
+                    mHasPrev = false;
+                }
 
-                                mListAdapter.clear();
-                            }
-
-                            int count = 0;
-                            for (int i = list.size() - 1; i >= 0; i--) {
-                                BaseMessage message = list.get(i);
-                                if (DeskAdminMessage.is(message)) {
-                                    continue;
-                                }
-                                mListAdapter.insertMessage(list.get(i));
-                                count++;
-                            }
-                            mListAdapter.notifyDataSetChanged();
-
-                            if (count > 0) {
-                                mMinMessageTimestamp = list.get(0).getCreatedAt();
-                                mListView.setSelection(count - 1);
-                            }
-
-                            if (handler != null) {
-                                handler.onResult(null);
-                            }
+                if (refresh) {
+                    for (BaseMessage message : mListAdapter.mMessageList) {
+                        if (mListAdapter.isTempMessage(message) || mListAdapter.isFailedMessage(message)) {
+                            list.add(message);
                         }
-                    });
+                    }
+
+                    mListAdapter.clear();
+                }
+
+                int count = 0;
+                for (int i = list.size() - 1; i >= 0; i--) {
+                    BaseMessage message = list.get(i);
+                    if (DeskAdminMessage.is(message)) {
+                        continue;
+                    }
+                    mListAdapter.insertMessage(list.get(i));
+                    count++;
+                }
+                mListAdapter.notifyDataSetChanged();
+
+                if (count > 0) {
+                    mMinMessageTimestamp = list.get(0).getCreatedAt();
+                    mListView.setSelection(count - 1);
+                }
+
+                if (handler != null) {
+                    handler.onResult(null);
+                }
+            });
         }
     }
 
     private void scrollToBottom() {
         try {
-            mListView.post(new Runnable() {
-                @Override
-                public void run() {
-                    mListView.setSelection(mListAdapter.getCount() - 1);
-                }
-            });
+            mListView.post(() -> mListView.setSelection(mListAdapter.getCount() - 1));
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -734,45 +683,43 @@ public class ChatActivity extends AppCompatActivity {
         if (mChannel != null) {
             mUrlPreviewTempMessage = message;
 
-            DeskUserRichMessage.updateUserMessageWithUrl(mChannel, message, text, url, new DeskUserRichMessage.UpdateUserMessageWithUrlHandler() {
-                @Override
-                public void onResult(UserMessage userMessage, SendBirdException e) {
-                    mUrlPreviewTempMessage = null;
+            DeskUserRichMessage.updateUserMessageWithUrl(mChannel, message, text, url, (userMessage, e) -> {
+                mUrlPreviewTempMessage = null;
 
-                    if (e != null) {
-                        mListAdapter.notifyDataSetChanged();
-                        return;
-                    }
-
-                    mListAdapter.replaceMessage(userMessage);
+                if (e != null) {
                     mListAdapter.notifyDataSetChanged();
-
-                    mChannel.markAsRead();
+                    return;
                 }
+
+                mListAdapter.replaceMessage(userMessage);
+                mListAdapter.notifyDataSetChanged();
+
+                mChannel.markAsRead(null);
             });
         }
     }
 
     private void sendUserMessage(final String text) {
         if (mChannel != null) {
-            UserMessage tempMessage = mChannel.sendUserMessage(text, new BaseChannel.SendUserMessageHandler() {
-                @Override
-                public void onSent(UserMessage userMessage, SendBirdException e) {
-                    if (e != null) {
+            UserMessage tempMessage = mChannel.sendUserMessage(text, (userMessage, e) -> {
+                if (e != null) {
+                    if (userMessage != null) {
                         mListAdapter.markMessageFailed(userMessage.getRequestId());
-                        return;
                     }
+                    return;
+                }
 
-                    Map<String, String> data = new HashMap<>();
+                Map<String, String> data = new HashMap<>();
+                if (userMessage != null) {
                     data.put("message", userMessage.getMessage());
-                    Event.onEvent(Event.EventListener.CHAT_SEND_USER_MESSAGE, data);
+                }
+                Event.onEvent(Event.EventListener.CHAT_SEND_USER_MESSAGE, data);
 
-                    mListAdapter.markMessageSent(userMessage);
+                mListAdapter.markMessageSent(userMessage);
 
-                    List<String> urls = WebUtils.extractUrls(text);
-                    if (urls.size() > 0) {
-                        updateUserMessageWithUrl(userMessage, text, urls.get(0));
-                    }
+                List<String> urls = WebUtils.extractUrls(text);
+                if (urls.size() > 0) {
+                    updateUserMessageWithUrl(userMessage, text, urls.get(0));
                 }
             });
             addTempMessage(tempMessage);
@@ -792,7 +739,7 @@ public class ChatActivity extends AppCompatActivity {
             String mime = (String) info.get("mime");
             File file;
             String name;
-            int size;
+            int size = 0;
 
             if (path == null || path.length() == 0) {
                 if (mTempFileUri != null) {
@@ -801,9 +748,9 @@ public class ChatActivity extends AppCompatActivity {
                 }
             }
 
-            if (fileType == FILE_TYPE_IMAGE && !mime.startsWith("image")) {
+            if (fileType == FILE_TYPE_IMAGE && (mime != null && !mime.startsWith("image"))) {
                 mime = "image/jpeg";
-            } else if (fileType == FILE_TYPE_VIDEO && !mime.startsWith("video")) {
+            } else if (fileType == FILE_TYPE_VIDEO && (mime != null && !mime.startsWith("video"))) {
                 mime = "video/mp4"; // "application/octet-stream"
             } else if (fileType == FILE_TYPE_ALL) {
                 if (path != null) {
@@ -825,15 +772,18 @@ public class ChatActivity extends AppCompatActivity {
                 showUploadProgress(true);
 
                 try {
-                    if (mime.toLowerCase().contains("gif")) {
+                    if (mime != null && mime.toLowerCase().contains("gif")) {
                         file = new File(path);
                         name = file.getName();
-                        size = (int) info.get("size");
-                    } else if (mime.startsWith("image")) {
+                        Object obj = info.get("size");
+                        if (obj != null) size = (int) obj;
+                    } else if (mime != null && mime.startsWith("image")) {
                         file = File.createTempFile("desk", ".jpg");
                         name = file.getName();
                         Bitmap bitmap = getResizedBitmap(uri);
-                        bitmap.compress(Bitmap.CompressFormat.JPEG, 80, new BufferedOutputStream(new FileOutputStream(file)));
+                        if (bitmap != null) {
+                            bitmap.compress(Bitmap.CompressFormat.JPEG, 80, new BufferedOutputStream(new FileOutputStream(file)));
+                        }
                         size = (int) file.length();
 
                         ExifInterface oriExif = new ExifInterface(path);
@@ -842,43 +792,51 @@ public class ChatActivity extends AppCompatActivity {
                         ExifInterface newExif = new ExifInterface(file.getAbsolutePath());
                         newExif.setAttribute(ExifInterface.TAG_ORIENTATION, oriOrientation);
                         newExif.saveAttributes();
-                    } else if (mime.startsWith("video")) {
+                    } else if (mime != null && mime.startsWith("video")) {
                         file = new File(path);
                         name = file.getName();
-                        size = (int) info.get("size");
+                        Object obj = info.get("size");
+                        if (obj != null) size = (int) obj;
                     } else {
                         file = new File(path);
                         name = file.getName();
-                        size = (int) info.get("size");
+                        Object obj = info.get("size");
+                        if (obj != null) size = (int) obj;
                     }
 
                     // Specify two dimensions of thumbnails to generate
-                    List<FileMessage.ThumbnailSize> thumbnailSizes = new ArrayList<>();
-                    thumbnailSizes.add(new FileMessage.ThumbnailSize(240, 240));
-                    thumbnailSizes.add(new FileMessage.ThumbnailSize(320, 320));
+                    List<ThumbnailSize> thumbnailSizes = new ArrayList<>();
+                    thumbnailSizes.add(new ThumbnailSize(240, 240));
+                    thumbnailSizes.add(new ThumbnailSize(320, 320));
 
                     // Send image with thumbnails in the specified dimensions
-                    FileMessage tempMessage = mChannel.sendFileMessage(file, name, mime, size, "", null, thumbnailSizes, new BaseChannel.SendFileMessageHandler() {
-                        @Override
-                        public void onSent(FileMessage fileMessage, SendBirdException e) {
-                            showUploadProgress(false);
-                            if (e != null) {
-                                mListAdapter.markMessageFailed(fileMessage.getRequestId());
-                                return;
-                            }
-
-                            Map<String, String> data = new HashMap<>();
-                            data.put("file_name", fileMessage.getName());
-                            data.put("file_size", String.valueOf(fileMessage.getSize()));
-                            data.put("mime_type", fileMessage.getType());
-                            Event.onEvent(Event.EventListener.CHAT_ATTACH_FILE, data);
-
-                            mListAdapter.markMessageSent(fileMessage);
+                    FileMessageCreateParams params = new FileMessageCreateParams();
+                    params.setFile(file);
+                    params.setFileName(name);
+                    params.setMimeType(mime);
+                    params.setFileSize(size);
+                    params.setThumbnailSizes(thumbnailSizes);
+                    FileMessage tempMessage = mChannel.sendFileMessage(params, (FileMessageHandler) (fileMessage, e) -> {
+                        showUploadProgress(false);
+                        if (e != null) {
+                            if (fileMessage != null) mListAdapter.markMessageFailed(fileMessage.getRequestId());
+                            return;
                         }
+
+                        if (fileMessage == null) return;
+                        Map<String, String> data = new HashMap<>();
+                        data.put("file_name", fileMessage.getName());
+                        data.put("file_size", String.valueOf(fileMessage.getSize()));
+                        data.put("mime_type", fileMessage.getType());
+                        Event.onEvent(Event.EventListener.CHAT_ATTACH_FILE, data);
+
+                        mListAdapter.markMessageSent(fileMessage);
                     });
 
-                    mListAdapter.addTempFileMessageInfo(tempMessage, uri);
-                    addTempMessage(tempMessage);
+                    if (tempMessage != null) {
+                        mListAdapter.addTempFileMessageInfo(tempMessage, uri);
+                        addTempMessage(tempMessage);
+                    }
                 } catch (IOException | NullPointerException e) {
                     e.printStackTrace();
                     showUploadProgress(false);
@@ -888,6 +846,7 @@ public class ChatActivity extends AppCompatActivity {
         }
     }
 
+    @Nullable
     private Bitmap getResizedBitmap(Uri uri) throws IOException {
         InputStream input;
         input = getContentResolver().openInputStream(uri);
@@ -897,15 +856,15 @@ public class ChatActivity extends AppCompatActivity {
         onlyBoundsOptions.inDither = true;//optional
         onlyBoundsOptions.inPreferredConfig = Bitmap.Config.ARGB_8888;//optional
         BitmapFactory.decodeStream(input, null, onlyBoundsOptions);
-        input.close();
+        if (input != null) input.close();
 
         if ((onlyBoundsOptions.outWidth == -1) || (onlyBoundsOptions.outHeight == -1)) {
             return null;
         }
 
-        int originalSize = (onlyBoundsOptions.outHeight > onlyBoundsOptions.outWidth) ? onlyBoundsOptions.outHeight : onlyBoundsOptions.outWidth;
+        int originalSize = Math.max(onlyBoundsOptions.outHeight, onlyBoundsOptions.outWidth);
 
-        double ratio = (originalSize > 1280) ? (originalSize / 1280) : 1.0;
+        double ratio = (originalSize > 1280) ? ((double) originalSize / 1280) : 1.0;
 
         BitmapFactory.Options bitmapOptions = new BitmapFactory.Options();
         bitmapOptions.inSampleSize = getPowerOfTwoForSampleRatio(ratio);
@@ -913,7 +872,7 @@ public class ChatActivity extends AppCompatActivity {
         bitmapOptions.inPreferredConfig = Bitmap.Config.ARGB_8888;//
         input = getContentResolver().openInputStream(uri);
         Bitmap bitmap = BitmapFactory.decodeStream(input, null, bitmapOptions);
-        input.close();
+        if (input != null) input.close();
         return bitmap;
     }
 
@@ -940,70 +899,41 @@ public class ChatActivity extends AppCompatActivity {
     }
 
     private void requestMedia() {
-        if (ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE)
-                != PackageManager.PERMISSION_GRANTED) {
-            requestStoragePermissions(PERMISSION_WRITE_EXTERNAL_STORAGE_UPLOAD);
-        } else {
-            Intent intent = new Intent();
-            // Show only images, no videos or anything else
-            intent.setType("image/*");
-            intent.setAction(Intent.ACTION_PICK);
-            // Always show the chooser (if there are multiple options available)
-            startActivityForResult(Intent.createChooser(intent, "Select Image"), INTENT_REQUEST_CHOOSE_MEDIA);
-        }
+        pickImage.launch(new PickVisualMediaRequest.Builder()
+                .setMediaType(ActivityResultContracts.PickVisualMedia.ImageOnly.INSTANCE)
+                .build());
     }
 
     private void requestCamera() {
-        if (ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE)
+        if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.P && ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE)
                 != PackageManager.PERMISSION_GRANTED) {
             requestStoragePermissions(PERMISSION_WRITE_EXTERNAL_STORAGE_CAMERA);
         } else {
-            mRequestingCamera = true;
             mTempPhotoUri = getTempFileUri(true, false);
 
             Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
             intent.putExtra(MediaStore.EXTRA_OUTPUT, mTempPhotoUri);
-
-            List<ResolveInfo> resInfoList= getPackageManager().queryIntentActivities(intent, PackageManager.MATCH_DEFAULT_ONLY);
-            for (ResolveInfo resolveInfo : resInfoList) {
-                String packageName = resolveInfo.activityInfo.packageName;
-                grantUriPermission(packageName, mTempPhotoUri, Intent.FLAG_GRANT_WRITE_URI_PERMISSION | Intent.FLAG_GRANT_READ_URI_PERMISSION);
-            }
-            startActivityForResult(intent, INTENT_REQUEST_CAMERA);
+            takeCameraLauncher.launch(intent);
         }
     }
 
     private void requestToUploadVideo() {
-        if (ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE)
-                != PackageManager.PERMISSION_GRANTED) {
-            requestStoragePermissions(PERMISSION_WRITE_EXTERNAL_STORAGE_UPLOAD_VIDEO);
-        } else {
-            Intent intent = new Intent();
-            // Show only videos
-            intent.setType("video/*");
-            intent.setAction(Intent.ACTION_PICK);
-            // Always show the chooser (if there are multiple options available)
-            startActivityForResult(Intent.createChooser(intent, "Select Video"), INTENT_REQUEST_TO_UPLOAD_VIDEO);
-        }
+        // Launch the photo picker and let the user choose only videos.
+        pickVideo.launch(new PickVisualMediaRequest.Builder()
+                .setMediaType(ActivityResultContracts.PickVisualMedia.VideoOnly.INSTANCE)
+                .build());
     }
 
     private void requestToRecordVideo() {
-        if (ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE)
+        if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.P && ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE)
                 != PackageManager.PERMISSION_GRANTED) {
             requestStoragePermissions(PERMISSION_WRITE_EXTERNAL_STORAGE_RECORD_VIDEO);
         } else {
-            mRequestingCamera = true;
             mTempVideoUri = getTempFileUri(false, false);
 
             Intent intent = new Intent(MediaStore.ACTION_VIDEO_CAPTURE);
             intent.putExtra(MediaStore.EXTRA_OUTPUT, mTempVideoUri);
-
-            List<ResolveInfo> resInfoList= getPackageManager().queryIntentActivities(intent, PackageManager.MATCH_DEFAULT_ONLY);
-            for (ResolveInfo resolveInfo : resInfoList) {
-                String packageName = resolveInfo.activityInfo.packageName;
-                grantUriPermission(packageName, mTempVideoUri, Intent.FLAG_GRANT_WRITE_URI_PERMISSION | Intent.FLAG_GRANT_READ_URI_PERMISSION);
-            }
-            startActivityForResult(intent, INTENT_REQUEST_TO_RECORD_VIDEO);
+            takeVideoLauncher.launch(intent);
         }
     }
 
@@ -1039,16 +969,11 @@ public class ChatActivity extends AppCompatActivity {
             // and the user would benefit from additional context for the use of the permission.
             // For example if the user has previously denied the permission.
             Snackbar.make(mView, R.string.desk_storage_access_request, Snackbar.LENGTH_LONG)
-                    .setAction(R.string.desk_ok, new View.OnClickListener() {
-                        @Override
-                        public void onClick(View view) {
-                            ActivityCompat.requestPermissions(
-                                    ChatActivity.this,
-                                    new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE},
-                                    code
-                            );
-                        }
-                    })
+                    .setAction(R.string.desk_ok, view -> ActivityCompat.requestPermissions(
+                            ChatActivity.this,
+                            new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE},
+                            code
+                    ))
                     .show();
         } else {
             // Permission has not been granted yet. Request it directly.
@@ -1103,27 +1028,21 @@ public class ChatActivity extends AppCompatActivity {
     private void retryFailedMessage(final BaseMessage message) {
         new AlertDialog.Builder(new ContextThemeWrapper(this, R.style.Theme_Desk_AlertDialog))
                 .setMessage(R.string.desk_retry_failed_message)
-                .setPositiveButton(R.string.desk_resend_message, new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        if (which == DialogInterface.BUTTON_POSITIVE) {
-                            if (message instanceof UserMessage) {
-                                String userInput = ((UserMessage) message).getMessage();
-                                sendUserMessage(userInput);
-                            } else if (message instanceof FileMessage) {
-                                Uri uri = mListAdapter.getTempFileMessageUri(message);
-                                sendFileMessage(uri, FILE_TYPE_ALL);
-                            }
-                            mListAdapter.removeFailedMessage(message);
+                .setPositiveButton(R.string.desk_resend_message, (dialog, which) -> {
+                    if (which == DialogInterface.BUTTON_POSITIVE) {
+                        if (message instanceof UserMessage) {
+                            String userInput = ((UserMessage) message).getMessage();
+                            sendUserMessage(userInput);
+                        } else if (message instanceof FileMessage) {
+                            Uri uri = mListAdapter.getTempFileMessageUri(message);
+                            sendFileMessage(uri, FILE_TYPE_ALL);
                         }
+                        mListAdapter.removeFailedMessage(message);
                     }
                 })
-                .setNegativeButton(R.string.desk_delete_message, new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        if (which == DialogInterface.BUTTON_NEGATIVE) {
-                            mListAdapter.removeFailedMessage(message);
-                        }
+                .setNegativeButton(R.string.desk_delete_message, (dialog, which) -> {
+                    if (which == DialogInterface.BUTTON_NEGATIVE) {
+                        mListAdapter.removeFailedMessage(message);
                     }
                 }).show();
     }
@@ -1138,20 +1057,17 @@ public class ChatActivity extends AppCompatActivity {
         } else {
             new AlertDialog.Builder(new ContextThemeWrapper(this, R.style.Theme_Desk_AlertDialog))
                     .setMessage(R.string.desk_download_file)
-                    .setPositiveButton(R.string.desk_download, new DialogInterface.OnClickListener() {
-                        @Override
-                        public void onClick(DialogInterface dialog, int which) {
-                            if (which == DialogInterface.BUTTON_POSITIVE) {
-                                String url = message.getUrl();
-                                String fileName = message.getName();
+                    .setPositiveButton(R.string.desk_download, (dialog, which) -> {
+                        if (which == DialogInterface.BUTTON_POSITIVE) {
+                            String url = message.getUrl();
+                            String fileName = message.getName();
 
-                                Map<String, String> data = new HashMap<>();
-                                data.put("file_name", fileName);
-                                data.put("url", url);
-                                Event.onEvent(Event.EventListener.CHAT_DOWNLOAD_AGENT_FILE, data);
+                            Map<String, String> data = new HashMap<>();
+                            data.put("file_name", fileName);
+                            data.put("url", url);
+                            Event.onEvent(Event.EventListener.CHAT_DOWNLOAD_AGENT_FILE, data);
 
-                                FileUtils.downloadFile(ChatActivity.this, url, fileName);
-                            }
+                            FileUtils.downloadFile(ChatActivity.this, url, fileName);
                         }
                     })
                     .setNegativeButton(R.string.desk_cancel, null).show();
@@ -1176,8 +1092,8 @@ public class ChatActivity extends AppCompatActivity {
         private final LayoutInflater mInflater;
         private final ArrayList<BaseMessage> mMessageList;
 
-        private ArrayList<String> mFailedMessageIdList = new ArrayList<>();
-        private Hashtable<String, Uri> mTempFileMessageUriTable = new Hashtable<>();
+        private final ArrayList<String> mFailedMessageIdList = new ArrayList<>();
+        private final Hashtable<String, Uri> mTempFileMessageUriTable = new Hashtable<>();
 
         private MessageListAdapter(Context context) {
             mContext = context;
@@ -1208,9 +1124,9 @@ public class ChatActivity extends AppCompatActivity {
             if (isTempMessage(message) || isFailedMessage(message)) {
                 mMessageList.add(0, message);
             } else {
-                for (Object item : mMessageList) {
-                    if (item instanceof BaseMessage) {
-                        if (message.getMessageId() == ((BaseMessage) item).getMessageId()) {
+                for (BaseMessage item : mMessageList) {
+                    if (item != null) {
+                        if (message.getMessageId() == item.getMessageId()) {
                             return;
                         }
                     }
@@ -1220,9 +1136,9 @@ public class ChatActivity extends AppCompatActivity {
         }
 
         private void appendMessage(BaseMessage message) {
-            for (Object item : mMessageList) {
-                if (item instanceof BaseMessage) {
-                    if (message.getMessageId() == ((BaseMessage) item).getMessageId()) {
+            for (BaseMessage item : mMessageList) {
+                if (item != null) {
+                    if (message.getMessageId() == item.getMessageId()) {
                         return;
                     }
                 }
@@ -1261,14 +1177,10 @@ public class ChatActivity extends AppCompatActivity {
 
             if (message instanceof UserMessage) {
                 int index = mFailedMessageIdList.indexOf(((UserMessage) message).getRequestId());
-                if (index >= 0) {
-                    return true;
-                }
+                return index >= 0;
             } else if (message instanceof FileMessage) {
                 int index = mFailedMessageIdList.indexOf(((FileMessage) message).getRequestId());
-                if (index >= 0) {
-                    return true;
-                }
+                return index >= 0;
             }
 
             return false;
@@ -1278,6 +1190,7 @@ public class ChatActivity extends AppCompatActivity {
             mTempFileMessageUriTable.put(message.getRequestId(), uri);
         }
 
+        @Nullable
         private Uri getTempFileMessageUri(BaseMessage message) {
             if (!isTempMessage(message)) {
                 return null;
@@ -1429,8 +1342,10 @@ public class ChatActivity extends AppCompatActivity {
         @Override
         public int getItemViewType(int position) {
             BaseMessage message = mMessageList.get(position);
+            Sender sender = message.getSender();
+            User currentUser = SendbirdChat.getCurrentUser();
             if (message instanceof UserMessage) {
-                if (((UserMessage) message).getSender().getUserId().equals(SendBird.getCurrentUser().getUserId())) {
+                if (sender != null && currentUser != null && sender.getUserId().equals(currentUser.getUserId())) {
                     return TYPE_USER_MESSAGE_ME;
                 } else {
                     if (DeskUserRichMessage.isInquireCloserType(message)) {
@@ -1441,7 +1356,7 @@ public class ChatActivity extends AppCompatActivity {
                 }
             } else if (message instanceof FileMessage) {
                 FileMessage fileMessage = (FileMessage) message;
-                boolean me = fileMessage.getSender().getUserId().equals(SendBird.getCurrentUser().getUserId());
+                boolean me = sender != null && currentUser != null && sender.getUserId().equals(currentUser.getUserId());
 
                 int fileType = getFileType(fileMessage);
                 switch (fileType) {
@@ -1739,26 +1654,11 @@ public class ChatActivity extends AppCompatActivity {
                     }
 
                     if (isFailedMessage) {
-                        messageContainer.setOnClickListener(new View.OnClickListener() {
-                            @Override
-                            public void onClick(View view) {
-                                onUserMessageClicked(userMessage);
-                            }
-                        });
+                        messageContainer.setOnClickListener(view -> onUserMessageClicked(userMessage));
 
-                        txtMessage.setOnClickListener(new View.OnClickListener() {
-                            @Override
-                            public void onClick(View v) {
-                                onUserMessageClicked(userMessage);
-                            }
-                        });
+                        txtMessage.setOnClickListener(v -> onUserMessageClicked(userMessage));
                     } else {
-                        urlPreviewContainer.setOnClickListener(new View.OnClickListener() {
-                            @Override
-                            public void onClick(View v) {
-                                onUserMessageUrlPreviewClicked(userMessage);
-                            }
-                        });
+                        urlPreviewContainer.setOnClickListener(v -> onUserMessageUrlPreviewClicked(userMessage));
                     }
                     break;
                 }
@@ -1817,26 +1717,24 @@ public class ChatActivity extends AppCompatActivity {
                         faqRecyclerView.setLayoutManager(new LinearLayoutManager(ChatActivity.this));
                         faqRecyclerView.setAdapter(adapter);
                         adapter.setItems(faqData.getFaqResults());
-                        adapter.setOnItemClickListener(new FAQResultAdapter.OnItemClickListener() {
-                            @Override
-                            public void onItemClicked(@NonNull FAQData.FAQResult result) {
-                                if (TextUtils.isEmpty(result.getUrl())) return;
-                                Uri webpage = Uri.parse(result.getUrl());
-                                Intent intent = new Intent(Intent.ACTION_VIEW, webpage);
-                                intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                                if (intent.resolveActivity(getPackageManager()) != null) {
-                                    startActivity(intent);
-                                }
+                        adapter.setOnItemClickListener(result -> {
+                            if (TextUtils.isEmpty(result.getUrl())) return;
+                            Uri webpage = Uri.parse(result.getUrl());
+                            Intent intent = new Intent(Intent.ACTION_VIEW, webpage);
+                            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                            if (intent.resolveActivity(getPackageManager()) != null) {
+                                startActivity(intent);
                             }
                         });
                     } else {
                         faqRecyclerView.setVisibility(View.GONE);
                     }
 
+                    Sender sender = userMessage.getSender();
                     if (!isContinuousToNext) {
                         TypedArray ta = mContext.obtainStyledAttributes(new int[]{R.attr.deskAvatarIcon});
                         ImageUtils.displayRoundImageFromUrlWithPlaceHolder(mContext,
-                                userMessage.getSender().getProfileUrl(),
+                                sender != null ? sender.getProfileUrl() : null,
                                 imgAgentProfile,
                                 ta.getResourceId(0, R.drawable.img_profile));
                         ta.recycle();
@@ -1853,33 +1751,18 @@ public class ChatActivity extends AppCompatActivity {
                     }
 
                     if (!isContinuousFromPrevious) {
-                        txtAgentName.setText(userMessage.getSender().getNickname());
+                        txtAgentName.setText(sender != null ? sender.getNickname() : "");
                         txtAgentName.setVisibility(View.VISIBLE);
                     } else {
                         txtAgentName.setVisibility(View.GONE);
                     }
 
                     if (isFailedMessage) {
-                        messageContainer.setOnClickListener(new View.OnClickListener() {
-                            @Override
-                            public void onClick(View view) {
-                                onUserMessageClicked(userMessage);
-                            }
-                        });
+                        messageContainer.setOnClickListener(view -> onUserMessageClicked(userMessage));
 
-                        txtMessage.setOnClickListener(new View.OnClickListener() {
-                            @Override
-                            public void onClick(View v) {
-                                onUserMessageClicked(userMessage);
-                            }
-                        });
+                        txtMessage.setOnClickListener(v -> onUserMessageClicked(userMessage));
                     } else {
-                        urlPreviewContainer.setOnClickListener(new View.OnClickListener() {
-                            @Override
-                            public void onClick(View v) {
-                                onUserMessageUrlPreviewClicked(userMessage);
-                            }
-                        });
+                        urlPreviewContainer.setOnClickListener(v -> onUserMessageUrlPreviewClicked(userMessage));
                     }
                     break;
                 }
@@ -1915,12 +1798,7 @@ public class ChatActivity extends AppCompatActivity {
 
                     txtMessage.setText(fileMessage.getName());
                     txtFileSize.setText(FileUtils.toReadableFileSize(fileMessage.getSize()));
-                    txtFileDownload.setOnClickListener(new View.OnClickListener() {
-                        @Override
-                        public void onClick(View v) {
-                            onFileMessageClicked(fileMessage);
-                        }
-                    });
+                    txtFileDownload.setOnClickListener(v -> onFileMessageClicked(fileMessage));
 
                     if (!isContinuousToNext) {
                         txtTime.setText(DateUtils.formatTime(fileMessage.getCreatedAt()));
@@ -1959,17 +1837,13 @@ public class ChatActivity extends AppCompatActivity {
 
                     txtMessage.setText(fileMessage.getName());
                     txtFileSize.setText(FileUtils.toReadableFileSize(fileMessage.getSize()));
-                    txtFileDownload.setOnClickListener(new View.OnClickListener() {
-                        @Override
-                        public void onClick(View v) {
-                            onFileMessageClicked(fileMessage);
-                        }
-                    });
+                    txtFileDownload.setOnClickListener(v -> onFileMessageClicked(fileMessage));
 
+                    final Sender fileMessageSender = fileMessage.getSender();
                     if (!isContinuousToNext) {
                         TypedArray ta = mContext.obtainStyledAttributes(new int[]{R.attr.deskAvatarIcon});
                         ImageUtils.displayRoundImageFromUrlWithPlaceHolder(mContext,
-                                fileMessage.getSender().getProfileUrl(),
+                                fileMessageSender != null ? fileMessageSender.getProfileUrl() : null,
                                 imgAgentProfile,
                                 ta.getResourceId(0, R.drawable.img_profile));
                         ta.recycle();
@@ -1986,7 +1860,7 @@ public class ChatActivity extends AppCompatActivity {
                     }
 
                     if (!isContinuousFromPrevious) {
-                        txtAgentName.setText(fileMessage.getSender().getNickname());
+                        txtAgentName.setText(fileMessageSender != null ? fileMessageSender.getNickname() : "");
                         txtAgentName.setVisibility(View.VISIBLE);
                     } else {
                         txtAgentName.setVisibility(View.GONE);
@@ -2025,7 +1899,7 @@ public class ChatActivity extends AppCompatActivity {
                         ImageUtils.displayImageFromUrl(ChatActivity.this, tempFileMessageUri.toString(), imgThumbnail, null);
                     } else {
                         // Get thumbnails from FileMessage
-                        ArrayList<FileMessage.Thumbnail> thumbnails = (ArrayList<FileMessage.Thumbnail>) fileMessage.getThumbnails();
+                        ArrayList<Thumbnail> thumbnails = (ArrayList<Thumbnail>) fileMessage.getThumbnails();
 
                         // If thumbnails exist, get smallest (first) thumbnail and display it in the message
                         if (thumbnails.size() > 0) {
@@ -2059,12 +1933,7 @@ public class ChatActivity extends AppCompatActivity {
                         preUngroup.setVisibility(View.GONE);
                     }
 
-                    imgThumbnail.setOnClickListener(new View.OnClickListener() {
-                        @Override
-                        public void onClick(View view) {
-                            onFileMessageClicked(fileMessage);
-                        }
-                    });
+                    imgThumbnail.setOnClickListener(view -> onFileMessageClicked(fileMessage));
                     break;
                 }
                 case TYPE_FILE_IMAGE_MESSAGE_AGENT: {
@@ -2088,7 +1957,7 @@ public class ChatActivity extends AppCompatActivity {
                         ImageUtils.displayImageFromUrl(ChatActivity.this, tempFileMessageUri.toString(), imgThumbnail, null);
                     } else {
                         // Get thumbnails from FileMessage
-                        ArrayList<FileMessage.Thumbnail> thumbnails = (ArrayList<FileMessage.Thumbnail>) fileMessage.getThumbnails();
+                        ArrayList<Thumbnail> thumbnails = (ArrayList<Thumbnail>) fileMessage.getThumbnails();
 
                         // If thumbnails exist, get smallest (first) thumbnail and display it in the message
                         if (thumbnails.size() > 0) {
@@ -2107,10 +1976,11 @@ public class ChatActivity extends AppCompatActivity {
                     }
                     imgThumbnail.setScaleType(ImageView.ScaleType.CENTER_CROP);
 
+                    final Sender fileMessageSender = fileMessage.getSender();
                     if (!isContinuousToNext) {
                         TypedArray ta = mContext.obtainStyledAttributes(new int[]{R.attr.deskAvatarIcon});
                         ImageUtils.displayRoundImageFromUrlWithPlaceHolder(mContext,
-                                fileMessage.getSender().getProfileUrl(),
+                                fileMessageSender != null ? fileMessageSender.getProfileUrl() : null,
                                 imgAgentProfile,
                                 ta.getResourceId(0, R.drawable.img_profile));
                         ta.recycle();
@@ -2127,18 +1997,13 @@ public class ChatActivity extends AppCompatActivity {
                     }
 
                     if (!isContinuousFromPrevious) {
-                        txtAgentName.setText(fileMessage.getSender().getNickname());
+                        txtAgentName.setText(fileMessageSender != null ? fileMessageSender.getNickname() : "");
                         txtAgentName.setVisibility(View.VISIBLE);
                     } else {
                         txtAgentName.setVisibility(View.GONE);
                     }
 
-                    imgThumbnail.setOnClickListener(new View.OnClickListener() {
-                        @Override
-                        public void onClick(View view) {
-                            onFileMessageClicked(fileMessage);
-                        }
-                    });
+                    imgThumbnail.setOnClickListener(view -> onFileMessageClicked(fileMessage));
                     break;
                 }
 
@@ -2174,7 +2039,7 @@ public class ChatActivity extends AppCompatActivity {
                         ImageUtils.displayImageFromUrl(ChatActivity.this, tempFileMessageUri.toString(), imgThumbnail, null);
                     } else {
                         // Get thumbnails from FileMessage
-                        ArrayList<FileMessage.Thumbnail> thumbnails = (ArrayList<FileMessage.Thumbnail>) fileMessage.getThumbnails();
+                        ArrayList<Thumbnail> thumbnails = (ArrayList<Thumbnail>) fileMessage.getThumbnails();
 
                         // If thumbnails exist, get smallest (first) thumbnail and display it in the message
                         if (thumbnails.size() > 0) {
@@ -2209,19 +2074,9 @@ public class ChatActivity extends AppCompatActivity {
                     }
 
                     if (isFailedMessage) {
-                        imgThumbnail.setOnClickListener(new View.OnClickListener() {
-                            @Override
-                            public void onClick(View view) {
-                                onFileMessageClicked(fileMessage);
-                            }
-                        });
+                        imgThumbnail.setOnClickListener(view -> onFileMessageClicked(fileMessage));
                     } else {
-                        imgPlay.setOnClickListener(new View.OnClickListener() {
-                            @Override
-                            public void onClick(View view) {
-                                onFileMessageClicked(fileMessage);
-                            }
-                        });
+                        imgPlay.setOnClickListener(view -> onFileMessageClicked(fileMessage));
                     }
                     break;
                 }
@@ -2247,7 +2102,7 @@ public class ChatActivity extends AppCompatActivity {
                         ImageUtils.displayImageFromUrl(ChatActivity.this, tempFileMessageUri.toString(), imgThumbnail, null);
                     } else {
                         // Get thumbnails from FileMessage
-                        ArrayList<FileMessage.Thumbnail> thumbnails = (ArrayList<FileMessage.Thumbnail>) fileMessage.getThumbnails();
+                        ArrayList<Thumbnail> thumbnails = (ArrayList<Thumbnail>) fileMessage.getThumbnails();
 
                         // If thumbnails exist, get smallest (first) thumbnail and display it in the message
                         if (thumbnails.size() > 0) {
@@ -2266,10 +2121,11 @@ public class ChatActivity extends AppCompatActivity {
                     }
                     imgThumbnail.setScaleType(ImageView.ScaleType.CENTER_CROP);
 
+                    final Sender fileMessageSender = fileMessage.getSender();
                     if (!isContinuousToNext) {
                         TypedArray ta = mContext.obtainStyledAttributes(new int[]{R.attr.deskAvatarIcon});
                         ImageUtils.displayRoundImageFromUrlWithPlaceHolder(mContext,
-                                fileMessage.getSender().getProfileUrl(),
+                                fileMessageSender != null ? fileMessageSender.getProfileUrl() : null,
                                 imgAgentProfile,
                                 ta.getResourceId(0, R.drawable.img_profile));
                         ta.recycle();
@@ -2286,26 +2142,16 @@ public class ChatActivity extends AppCompatActivity {
                     }
 
                     if (!isContinuousFromPrevious) {
-                        txtAgentName.setText(fileMessage.getSender().getNickname());
+                        txtAgentName.setText(fileMessageSender != null ? fileMessageSender.getNickname() : "");
                         txtAgentName.setVisibility(View.VISIBLE);
                     } else {
                         txtAgentName.setVisibility(View.GONE);
                     }
 
                     if (isFailedMessage) {
-                        imgThumbnail.setOnClickListener(new View.OnClickListener() {
-                            @Override
-                            public void onClick(View view) {
-                                onFileMessageClicked(fileMessage);
-                            }
-                        });
+                        imgThumbnail.setOnClickListener(view -> onFileMessageClicked(fileMessage));
                     } else {
-                        imgPlay.setOnClickListener(new View.OnClickListener() {
-                            @Override
-                            public void onClick(View view) {
-                                onFileMessageClicked(fileMessage);
-                            }
-                        });
+                        imgPlay.setOnClickListener(view -> onFileMessageClicked(fileMessage));
                     }
                     break;
                 }
@@ -2388,64 +2234,52 @@ public class ChatActivity extends AppCompatActivity {
                         progressBarYes.setVisibility(View.INVISIBLE);
                         progressBarNo.setVisibility(View.INVISIBLE);
 
-                        btnYes.setOnClickListener(new View.OnClickListener() {
-                            @Override
-                            public void onClick(View view) {
-                                btnGroup.setEnabled(false);
-                                btnYes.setAlpha(0.5f);
-                                btnNo.setAlpha(0.5f);
-                                progressBarYes.setVisibility(View.VISIBLE);
+                        btnYes.setOnClickListener(view -> {
+                            btnGroup.setEnabled(false);
+                            btnYes.setAlpha(0.5f);
+                            btnNo.setAlpha(0.5f);
+                            progressBarYes.setVisibility(View.VISIBLE);
+                            progressBarNo.setVisibility(View.INVISIBLE);
+
+                            mTicket.confirmEndOfChat(userMessage, true, (ticket, e) -> {
+                                btnGroup.setEnabled(true);
+                                btnYes.setAlpha(1f);
+                                btnNo.setAlpha(1f);
+                                progressBarYes.setVisibility(View.INVISIBLE);
                                 progressBarNo.setVisibility(View.INVISIBLE);
 
-                                mTicket.confirmEndOfChat(userMessage, true, new Ticket.ConfirmEndOfChatHandler() {
-                                    @Override
-                                    public void onResult(Ticket ticket, SendBirdException e) {
-                                        btnGroup.setEnabled(true);
-                                        btnYes.setAlpha(1f);
-                                        btnNo.setAlpha(1f);
-                                        progressBarYes.setVisibility(View.INVISIBLE);
-                                        progressBarNo.setVisibility(View.INVISIBLE);
+                                if (e != null) {
+                                    return;
+                                }
 
-                                        if (e != null) {
-                                            return;
-                                        }
-
-                                        Map<String, String> data = new HashMap<>();
-                                        data.put("choice", "yes");
-                                        Event.onEvent(Event.EventListener.CHAT_CONFIRM_END_OF_CHAT, data);
-                                    }
-                                });
-                            }
+                                Map<String, String> data = new HashMap<>();
+                                data.put("choice", "yes");
+                                Event.onEvent(Event.EventListener.CHAT_CONFIRM_END_OF_CHAT, data);
+                            });
                         });
 
-                        btnNo.setOnClickListener(new View.OnClickListener() {
-                            @Override
-                            public void onClick(View view) {
-                                btnGroup.setEnabled(false);
-                                btnYes.setAlpha(0.5f);
-                                btnNo.setAlpha(0.5f);
+                        btnNo.setOnClickListener(view -> {
+                            btnGroup.setEnabled(false);
+                            btnYes.setAlpha(0.5f);
+                            btnNo.setAlpha(0.5f);
+                            progressBarYes.setVisibility(View.INVISIBLE);
+                            progressBarNo.setVisibility(View.VISIBLE);
+
+                            mTicket.confirmEndOfChat(userMessage, false, (ticket, e) -> {
+                                btnGroup.setEnabled(true);
+                                btnYes.setAlpha(1f);
+                                btnNo.setAlpha(1f);
                                 progressBarYes.setVisibility(View.INVISIBLE);
-                                progressBarNo.setVisibility(View.VISIBLE);
+                                progressBarNo.setVisibility(View.INVISIBLE);
 
-                                mTicket.confirmEndOfChat(userMessage, false, new Ticket.ConfirmEndOfChatHandler() {
-                                    @Override
-                                    public void onResult(Ticket ticket, SendBirdException e) {
-                                        btnGroup.setEnabled(true);
-                                        btnYes.setAlpha(1f);
-                                        btnNo.setAlpha(1f);
-                                        progressBarYes.setVisibility(View.INVISIBLE);
-                                        progressBarNo.setVisibility(View.INVISIBLE);
+                                if (e != null) {
+                                    return;
+                                }
 
-                                        if (e != null) {
-                                            return;
-                                        }
-
-                                        Map<String, String> data = new HashMap<>();
-                                        data.put("choice", "no");
-                                        Event.onEvent(Event.EventListener.CHAT_CONFIRM_END_OF_CHAT, data);
-                                    }
-                                });
-                            }
+                                Map<String, String> data = new HashMap<>();
+                                data.put("choice", "no");
+                                Event.onEvent(Event.EventListener.CHAT_CONFIRM_END_OF_CHAT, data);
+                            });
                         });
                     } else if (DeskUserRichMessage.isInquireCloserTypeConfirmedState(message)) {
                         txtMessage.setText(userMessage.getMessage());
@@ -2465,7 +2299,7 @@ public class ChatActivity extends AppCompatActivity {
         }
 
         private class ViewHolder {
-            private Hashtable<String, View> holder = new Hashtable<>();
+            private final Hashtable<String, View> holder = new Hashtable<>();
             private int type;
 
             private int getViewType() {
@@ -2503,11 +2337,8 @@ public class ChatActivity extends AppCompatActivity {
         @NonNull
         @Override
         public FAQResultViewHolder onCreateViewHolder(@NonNull ViewGroup viewGroup, int i) {
-            return new FAQResultViewHolder(LayoutInflater.from(viewGroup.getContext()).inflate(R.layout.list_item_faq_result, viewGroup, false), new FAQResultViewHolder.OnViewHolderClickListener() {
-                @Override
-                public void onClicked(@NonNull RecyclerView.ViewHolder viewHolder) {
-                    if (listener != null) listener.onItemClicked(items.get(viewHolder.getAdapterPosition()));
-                }
+            return new FAQResultViewHolder(LayoutInflater.from(viewGroup.getContext()).inflate(R.layout.list_item_faq_result, viewGroup, false), viewHolder -> {
+                if (listener != null) listener.onItemClicked(items.get(viewHolder.getAdapterPosition()));
             });
         }
 
@@ -2545,11 +2376,8 @@ public class ChatActivity extends AppCompatActivity {
                 questionTextView = itemView.findViewById(R.id.txt_question);
                 answerTextView = itemView.findViewById(R.id.txt_answer);
                 imageView = itemView.findViewById(R.id.img);
-                itemView.setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View v) {
-                        if (listener != null) listener.onClicked(FAQResultViewHolder.this);
-                    }
+                itemView.setOnClickListener(v -> {
+                    if (listener != null) listener.onClicked(FAQResultViewHolder.this);
                 });
             }
 
@@ -2571,12 +2399,9 @@ public class ChatActivity extends AppCompatActivity {
             textView.setText(text);
             BetterLinkMovementMethod
                     .linkify(Linkify.WEB_URLS, textView)
-                    .setOnLinkClickListener(new BetterLinkMovementMethod.OnLinkClickListener() {
-                        @Override
-                        public boolean onClick(TextView textView, String url) {
-                            startWebActivity(url);
-                            return true;
-                        }
+                    .setOnLinkClickListener((textView1, url) -> {
+                        startWebActivity(url);
+                        return true;
                     });
         } catch (Exception e) {
             e.printStackTrace();
@@ -2594,12 +2419,10 @@ public class ChatActivity extends AppCompatActivity {
     private int getFileType(FileMessage fileMessage) {
         int fileType = FILE_TYPE_ALL;
         String type = fileMessage.getType();
-        if (type != null) {
-            if (type.startsWith("image")) {
-                fileType = FILE_TYPE_IMAGE;
-            } else if (type.startsWith("video")) {
-                fileType = FILE_TYPE_VIDEO;
-            }
+        if (type.startsWith("image")) {
+            fileType = FILE_TYPE_IMAGE;
+        } else if (type.startsWith("video")) {
+            fileType = FILE_TYPE_VIDEO;
         }
         return fileType;
     }

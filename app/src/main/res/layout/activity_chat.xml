@@ -6,7 +6,7 @@
     android:layout_height="match_parent"
     android:background="?attr/deskChatBackground">
 
-    <android.support.v7.widget.Toolbar
+    <androidx.appcompat.widget.Toolbar
         style="?attr/deskToolbarStyle"
         android:id="@+id/toolbar"
         android:elevation="4dp"/>
@@ -29,7 +29,7 @@
 
     <!--</android.support.v4.widget.SwipeRefreshLayout>-->
 
-    <android.support.v4.widget.ContentLoadingProgressBar
+    <androidx.core.widget.ContentLoadingProgressBar
         style="@style/Widget.AppCompat.ProgressBar"
         android:id="@+id/progress_bar"
         android:layout_centerInParent="true"
@@ -68,7 +68,7 @@
             android:layout_height="33dp"
             android:layout_weight="0">
 
-            <android.support.v4.widget.ContentLoadingProgressBar
+            <androidx.core.widget.ContentLoadingProgressBar
                 style="@style/Widget.AppCompat.ProgressBar"
                 android:id="@+id/uploading_progress_bar"
                 android:layout_width="match_parent"

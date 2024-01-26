@@ -60,7 +60,7 @@
                     android:background="?attr/deskInquireClosureYesBackground"
                     android:text="@string/desk_yes"/>
 
-                <android.support.v4.widget.ContentLoadingProgressBar
+                <androidx.core.widget.ContentLoadingProgressBar
                     android:id="@+id/progress_bar_yes"
                     style="@style/Widget.AppCompat.ProgressBar"
                     android:layout_width="25dp"
@@ -83,7 +83,7 @@
                     android:background="?attr/deskInquireClosureNoBackground"
                     android:text="@string/desk_no"/>
 
-                <android.support.v4.widget.ContentLoadingProgressBar
+                <androidx.core.widget.ContentLoadingProgressBar
                     android:id="@+id/progress_bar_no"
                     style="@style/Widget.AppCompat.ProgressBar"
                     android:layout_width="25dp"

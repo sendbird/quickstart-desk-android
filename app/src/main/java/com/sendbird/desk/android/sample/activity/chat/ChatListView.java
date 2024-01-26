@@ -5,25 +5,28 @@ import android.util.AttributeSet;
 import android.view.MotionEvent;
 import android.widget.ListView;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+
 public class ChatListView extends ListView {
 
     private static final float mMinRange = 5.0f;
 
-    private Context mContext;
+    private final Context mContext;
     private float mListViewX;
     private float mListViewY;
 
-    public ChatListView(Context context) {
+    public ChatListView(@NonNull Context context) {
         super(context);
         mContext = context;
     }
 
-    public ChatListView(Context context, AttributeSet attrs) {
+    public ChatListView(@NonNull Context context, @Nullable AttributeSet attrs) {
         super(context, attrs);
         mContext = context;
     }
 
-    public ChatListView(Context context, AttributeSet attrs, int defStyleAttr) {
+    public ChatListView(@NonNull Context context, @Nullable AttributeSet attrs, int defStyleAttr) {
         super(context, attrs, defStyleAttr);
         mContext = context;
     }

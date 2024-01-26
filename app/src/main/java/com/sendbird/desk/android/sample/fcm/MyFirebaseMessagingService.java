@@ -18,14 +18,21 @@ package com.sendbird.desk.android.sample.fcm;
 
 import android.util.Log;
 
+import androidx.annotation.NonNull;
+
 import com.google.firebase.messaging.FirebaseMessagingService;
 import com.google.firebase.messaging.RemoteMessage;
-import com.sendbird.android.SendBirdException;
 import com.sendbird.desk.android.sample.desk.DeskManager;
 
 public class MyFirebaseMessagingService extends FirebaseMessagingService {
 
     private static final String TAG = "MyFirebaseMsgService";
+
+    @Override
+    public void onNewToken(@NonNull String token) {
+        super.onNewToken(token);
+        DeskManager.updatePushToken(token);
+    }
 
     /**
      * Called when message is received.
@@ -34,7 +41,7 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
      */
     // [START receive_message]
     @Override
-    public void onMessageReceived(RemoteMessage remoteMessage) {
+    public void onMessageReceived(@NonNull RemoteMessage remoteMessage) {
         // [START_EXCLUDE]
         // There are two types of messages data messages and notification messages. Data messages are handled
         // here in onMessageReceived whether the app is in the foreground or background. Data messages are the type
@@ -71,14 +78,11 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
      * @param remoteMessage FCM message + payload received.
      */
     private void sendNotification(RemoteMessage remoteMessage) {
-        DeskManager.parsePushMessage(remoteMessage, new DeskManager.ParsePushMessageHandler() {
-            @Override
-            public void onResult(String message, String channelName, String channelUrl, SendBirdException e) {
-                if (e != null) {
-                    return;
-                }
-                DeskManager.buildNotification(MyFirebaseMessagingService.this, message, channelName, channelUrl);
+        DeskManager.parsePushMessage(remoteMessage, (message, channelName, channelUrl, e) -> {
+            if (e != null) {
+                return;
             }
+            DeskManager.buildNotification(MyFirebaseMessagingService.this, message, channelName, channelUrl);
         });
     }
 }

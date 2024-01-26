@@ -1,5 +1,8 @@
 package com.sendbird.desk.android.sample.app;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+
 import java.util.Map;
 
 public class Event {
@@ -12,14 +15,14 @@ public class Event {
         }
     }
 
-    public static void onEvent(String action, Map<String, String> data) {
+    public static void onEvent(@NonNull String action, @Nullable Map<String, String> data) {
         if (mEventListener != null) {
             mEventListener.onEvent(action, data);
         }
     }
 
     public interface EventListener {
-        void onEvent(String action, Map<String, String> data);
+        void onEvent(@NonNull String action, @Nullable Map<String, String> data);
 
         String CHAT_ENTER = "CHAT_ENTER";   // [title:String, status:String, ticket_id:String]
         String CHAT_SEND_USER_MESSAGE = "CHAT_SEND_USER_MESSAGE";   // [message:String]

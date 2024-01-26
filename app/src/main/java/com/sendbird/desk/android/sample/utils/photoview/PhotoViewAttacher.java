@@ -20,7 +20,6 @@ import android.graphics.Matrix;
 import android.graphics.Matrix.ScaleToFit;
 import android.graphics.RectF;
 import android.graphics.drawable.Drawable;
-import android.support.v4.view.MotionEventCompat;
 import android.view.GestureDetector;
 import android.view.MotionEvent;
 import android.view.View;
@@ -32,6 +31,9 @@ import android.widget.ImageView;
 import android.widget.ImageView.ScaleType;
 import android.widget.OverScroller;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+
 /**
  * The component of {@link PhotoView} which does the work allowing for zooming, scaling, panning, etc.
  * It is made public in case you need to subclass something other than {@link ImageView} and still
@@ -41,16 +43,16 @@ public class PhotoViewAttacher implements View.OnTouchListener,
         OnGestureListener,
         View.OnLayoutChangeListener {
 
-    private static float DEFAULT_MAX_SCALE = 3.0f;
-    private static float DEFAULT_MID_SCALE = 1.75f;
-    private static float DEFAULT_MIN_SCALE = 1.0f;
-    private static int DEFAULT_ZOOM_DURATION = 200;
+    private static final float DEFAULT_MAX_SCALE = 3.0f;
+    private static final float DEFAULT_MID_SCALE = 1.75f;
+    private static final float DEFAULT_MIN_SCALE = 1.0f;
+    private static final int DEFAULT_ZOOM_DURATION = 200;
 
     private static final int EDGE_NONE = -1;
     private static final int EDGE_LEFT = 0;
     private static final int EDGE_RIGHT = 1;
     private static final int EDGE_BOTH = 2;
-    private static int SINGLE_TOUCH = 1;
+    private static final int SINGLE_TOUCH = 1;
 
     private Interpolator mInterpolator = new AccelerateDecelerateInterpolator();
     private int mZoomDuration = DEFAULT_ZOOM_DURATION;
@@ -61,7 +63,7 @@ public class PhotoViewAttacher implements View.OnTouchListener,
     private boolean mAllowParentInterceptOnEdge = true;
     private boolean mBlockParentIntercept = false;
 
-    private ImageView mImageView;
+    private final ImageView mImageView;
 
     // Gesture Detectors
     private GestureDetector mGestureDetector;
@@ -108,22 +110,22 @@ public class PhotoViewAttacher implements View.OnTouchListener,
 
             // forward long click listener
             @Override
-            public void onLongPress(MotionEvent e) {
+            public void onLongPress(@NonNull MotionEvent e) {
                 if (mLongClickListener != null) {
                     mLongClickListener.onLongClick(mImageView);
                 }
             }
 
             @Override
-            public boolean onFling(MotionEvent e1, MotionEvent e2,
+            public boolean onFling(@NonNull MotionEvent e1, @NonNull MotionEvent e2,
                                    float velocityX, float velocityY) {
                 if (mSingleFlingListener != null) {
                     if (getScale() > DEFAULT_MIN_SCALE) {
                         return false;
                     }
 
-                    if (MotionEventCompat.getPointerCount(e1) > SINGLE_TOUCH
-                            || MotionEventCompat.getPointerCount(e2) > SINGLE_TOUCH) {
+                    if (e1.getPointerCount() > SINGLE_TOUCH
+                            || e2.getPointerCount() > SINGLE_TOUCH) {
                         return false;
                     }
 
@@ -135,7 +137,7 @@ public class PhotoViewAttacher implements View.OnTouchListener,
 
         mGestureDetector.setOnDoubleTapListener(new GestureDetector.OnDoubleTapListener() {
             @Override
-            public boolean onSingleTapConfirmed(MotionEvent e) {
+            public boolean onSingleTapConfirmed(@NonNull MotionEvent e) {
                 if (mOnClickListener != null) {
                     mOnClickListener.onClick(mImageView);
                 }
@@ -166,7 +168,7 @@ public class PhotoViewAttacher implements View.OnTouchListener,
             }
 
             @Override
-            public boolean onDoubleTap(MotionEvent ev) {
+            public boolean onDoubleTap(@NonNull MotionEvent ev) {
                 try {
                     float scale = getScale();
                     float x = ev.getX();
@@ -187,7 +189,7 @@ public class PhotoViewAttacher implements View.OnTouchListener,
             }
 
             @Override
-            public boolean onDoubleTapEvent(MotionEvent e) {
+            public boolean onDoubleTapEvent(@NonNull MotionEvent e) {
                 // Wait for the confirmed onDoubleTap() instead
                 return false;
             }
@@ -437,8 +439,8 @@ public class PhotoViewAttacher implements View.OnTouchListener,
 
     public void setScale(float scale, boolean animate) {
         setScale(scale,
-                (mImageView.getRight()) / 2,
-                (mImageView.getBottom()) / 2,
+                (float) (mImageView.getRight()) / 2,
+                (float) (mImageView.getBottom()) / 2,
                 animate);
     }
 
@@ -568,6 +570,7 @@ public class PhotoViewAttacher implements View.OnTouchListener,
      * @param matrix - Matrix to map Drawable against
      * @return RectF - Displayed Rectangle
      */
+    @Nullable
     private RectF getDisplayRect(Matrix matrix) {
         Drawable d = mImageView.getDrawable();
         if (d != null) {

@@ -1,26 +1,39 @@
 package com.sendbird.desk.android.sample.activity;
 
-import android.app.Activity;
+import android.Manifest;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
-import android.preference.PreferenceManager;
-import android.support.v7.app.AppCompatActivity;
+import android.provider.Settings;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.view.View;
-import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.google.firebase.iid.FirebaseInstanceId;
-import com.sendbird.android.SendBird;
-import com.sendbird.android.SendBirdException;
-import com.sendbird.android.User;
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.appcompat.app.AlertDialog;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
+import androidx.core.content.PermissionChecker;
+import androidx.preference.PreferenceManager;
+
+import com.google.firebase.messaging.FirebaseMessaging;
+import com.sendbird.android.ConnectionState;
+import com.sendbird.android.SendbirdChat;
+import com.sendbird.android.handler.CompletionHandler;
+import com.sendbird.android.handler.ConnectionHandler;
+import com.sendbird.android.params.UserUpdateParams;
 import com.sendbird.desk.android.SendBirdDesk;
 import com.sendbird.desk.android.Ticket;
 import com.sendbird.desk.android.sample.R;
@@ -47,8 +60,11 @@ public class MainActivity extends AppCompatActivity {
 
     private SharedPreferences mPref;
 
+    private final ActivityResultLauncher<String> requestPermissionLauncher = registerForActivityResult(new ActivityResultContracts.RequestPermission(), isGranted -> {});
+    private final ActivityResultLauncher<Intent> appSettingLauncher = registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), result -> {});
+
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
+    protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
@@ -93,48 +109,61 @@ public class MainActivity extends AppCompatActivity {
         });
 
         mBtnConnect = (Button) findViewById(R.id.btn_connect);
-        mBtnConnect.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                if (mBtnConnect.getText().equals("Connect")) {
-                    SharedPreferences.Editor editor = mPref.edit();
-                    editor.putString("user_id", mUserId);
-                    editor.putString("user_name", mUserName);
-                    editor.commit();
+        mBtnConnect.setOnClickListener(view -> {
+            if (mBtnConnect.getText().equals("Connect")) {
+                SharedPreferences.Editor editor = mPref.edit();
+                editor.putString("user_id", mUserId);
+                editor.putString("user_name", mUserName);
+                editor.commit();
 
-                    connect();
-                } else {
-                    disconnect();
-                }
+                connect();
+            } else {
+                disconnect();
             }
         });
 
         mBtnShowInbox = (Button) findViewById(R.id.btn_inbox);
-        mBtnShowInbox.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                showInbox();
-            }
-        });
+        mBtnShowInbox.setOnClickListener(view -> showInbox());
 
         mProgressBar = (ProgressBar) findViewById(R.id.progress_bar);
         ((TextView) findViewById(R.id.txt_version)).setText("SendBird Desk SDK v" + SendBirdDesk.getSdkVersion());
 
         setState(State.DISCONNECTED);
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            String permission = Manifest.permission.POST_NOTIFICATIONS;
+            if (ContextCompat.checkSelfPermission(this, permission) != PermissionChecker.PERMISSION_GRANTED) {
+                if (ActivityCompat.shouldShowRequestPermissionRationale(this, permission)) {
+                   showPermissionRationalePopup();
+                } else {
+                    requestPermissionLauncher.launch(permission);
+                }
+            }
+        }
     }
 
     @Override
     protected void onResume() {
         super.onResume();
 
-        if (SendBird.getConnectionState() == SendBird.ConnectionState.OPEN) {
+        if (SendbirdChat.getConnectionState() == ConnectionState.OPEN) {
             setState(State.CONNECTED);
             getOpenTicketCount();
         } else {
             setState(State.DISCONNECTED);
         }
 
-        SendBird.addConnectionHandler("connection handler", new SendBird.ConnectionHandler() {
+        SendbirdChat.addConnectionHandler("connection handler", new ConnectionHandler() {
+            @Override
+            public void onDisconnected(@NonNull String s) {
+
+            }
+
+            @Override
+            public void onConnected(@NonNull String s) {
+
+            }
+
             @Override
             public void onReconnectStarted() {
                 setState(State.CONNECTING);
@@ -156,7 +185,7 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onPause() {
         super.onPause();
-        SendBird.removeConnectionHandler("connection handler");
+        SendbirdChat.removeConnectionHandler("connection handler");
     }
 
     private enum State {
@@ -209,41 +238,38 @@ public class MainActivity extends AppCompatActivity {
 
         final String userId = mUserId;
 
-        DeskConnectionManager.login(userId, new SendBird.ConnectHandler() {
-            @Override
-            public void onConnected(User user, SendBirdException e) {
-                if (e != null) {
-                    setState(State.DISCONNECTED);
-                    Toast.makeText(getApplicationContext(), e.getCode() + ": " + e.getMessage(), Toast.LENGTH_SHORT).show();
+        DeskConnectionManager.login(userId, (user, e) -> {
+            if (e != null) {
+                setState(State.DISCONNECTED);
+                Toast.makeText(getApplicationContext(), e.getCode() + ": " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                return;
+            }
+
+            UserUpdateParams params = new UserUpdateParams();
+            params.setNickname(mUserName);
+            SendbirdChat.updateCurrentUserInfo(params, (CompletionHandler) e1 -> {
+                setState(State.CONNECTED);
+
+                if (e1 != null) {
+                    Toast.makeText(getApplicationContext(), e1.getCode() + ": " + e1.getMessage(), Toast.LENGTH_SHORT).show();
                     return;
                 }
 
-                SendBird.updateCurrentUserInfo(mUserName, "", new SendBird.UserInfoUpdateHandler() {
-                    @Override
-                    public void onUpdated(SendBirdException e) {
-                        setState(State.CONNECTED);
-
-                        if (e != null) {
-                            Toast.makeText(getApplicationContext(), e.getCode() + ": " + e.getMessage(), Toast.LENGTH_SHORT).show();
-                            return;
-                        }
-
-                        PrefUtils.setUserId(mUserId);
-                        getOpenTicketCount();
-                        DeskManager.updatePushToken(FirebaseInstanceId.getInstance().getToken());
+                PrefUtils.setUserId(mUserId);
+                getOpenTicketCount();
+                FirebaseMessaging.getInstance().getToken().addOnCompleteListener(task -> {
+                    if (!task.isSuccessful()) {
+                        return;
                     }
+
+                    DeskManager.updatePushToken(task.getResult());
                 });
-            }
+            });
         });
     }
 
     private void disconnect() {
-        DeskConnectionManager.logout(new SendBird.DisconnectHandler() {
-            @Override
-            public void onDisconnected() {
-                setState(State.DISCONNECTED);
-            }
-        });
+        DeskConnectionManager.logout(() -> setState(State.DISCONNECTED));
     }
 
     private void showInbox() {
@@ -253,20 +279,34 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void getOpenTicketCount() {
-        Ticket.getOpenCount(new Ticket.GetOpenCountHandler() {
-            @Override
-            public void onResult(int count, SendBirdException e) {
-                if (e != null) {
-                    Toast.makeText(getApplicationContext(), e.getCode() + ": " + e.getMessage(), Toast.LENGTH_SHORT).show();
-                    return;
-                }
-
-                mBtnShowInbox.setText("Inbox (" + count + ")");
+        Ticket.getOpenCount((count, e) -> {
+            if (e != null) {
+                Toast.makeText(getApplicationContext(), e.getCode() + ": " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                return;
             }
+
+            mBtnShowInbox.setText("Inbox (" + count + ")");
         });
     }
 
     private boolean isValidEmail(CharSequence email) {
         return email != null && email.length() > 0 && android.util.Patterns.EMAIL_ADDRESS.matcher(email).matches();
+    }
+
+    private void showPermissionRationalePopup() {
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setTitle("Permission Required")
+                .setMessage("You need to allow this permission to use push notifications.")
+                .setPositiveButton("OK", (dialog, which) -> {
+                    Intent intent = new Intent(android.provider.Settings.ACTION_APPLICATION_DETAILS_SETTINGS);
+                    intent.setAction(Settings.ACTION_APPLICATION_DETAILS_SETTINGS);
+                    intent.addCategory(Intent.CATEGORY_DEFAULT);
+                    intent.setData(Uri.parse("package:$packageName"));
+                    intent.addFlags(Intent.FLAG_ACTIVITY_NO_HISTORY);
+                    intent.addFlags(Intent.FLAG_ACTIVITY_EXCLUDE_FROM_RECENTS);
+                    appSettingLauncher.launch(intent);
+                })
+                .create()
+                .show();
     }
 }

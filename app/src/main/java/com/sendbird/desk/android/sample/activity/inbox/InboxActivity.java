@@ -2,20 +2,24 @@ package com.sendbird.desk.android.sample.activity.inbox;
 
 import android.content.Intent;
 import android.os.Bundle;
-import android.support.annotation.Nullable;
-import android.support.design.widget.FloatingActionButton;
-import android.support.design.widget.TabLayout;
-import android.support.v4.app.Fragment;
-import android.support.v4.app.FragmentManager;
-import android.support.v4.app.FragmentPagerAdapter;
-import android.support.v4.view.ViewPager;
-import android.support.v7.app.ActionBar;
-import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.view.View;
 
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.appcompat.app.ActionBar;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.Toolbar;
+import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentActivity;
+import androidx.viewpager2.adapter.FragmentStateAdapter;
+import androidx.viewpager2.widget.ViewPager2;
+
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
+import com.google.android.material.tabs.TabLayout;
+import com.google.android.material.tabs.TabLayoutMediator;
 import com.sendbird.desk.android.Ticket;
 import com.sendbird.desk.android.sample.R;
 import com.sendbird.desk.android.sample.activity.chat.ChatActivity;
@@ -25,8 +29,13 @@ import com.sendbird.desk.android.sample.desk.DeskManager;
 import com.sendbird.desk.android.sample.utils.PrefUtils;
 
 public class InboxActivity extends AppCompatActivity implements OpenTicketsFragment.OnTicketClosedListener {
-
     static final int REQUEST_EXIT = 0xf0;
+
+    private final ActivityResultLauncher<Intent> settingsLauncher = registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), result -> {
+        if (result.getResultCode() == RESULT_OK) {
+            finish();
+        }
+    });
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -41,26 +50,31 @@ public class InboxActivity extends AppCompatActivity implements OpenTicketsFragm
             actionBar.setTitle(R.string.desk_inbox);
         }
 
-        ViewPager viewPager = (ViewPager) findViewById(R.id.pager);
-        viewPager.setAdapter(new PagerAdapter(getSupportFragmentManager()));
+        ViewPager2 viewPager = (ViewPager2) findViewById(R.id.pager);
+        viewPager.setAdapter(new PagerAdapter(this));
 
-        ((TabLayout) findViewById(R.id.tab_layout)).setupWithViewPager(viewPager);
+        TabLayout tabLayout = findViewById(R.id.tab_layout);
+        new TabLayoutMediator(tabLayout, viewPager,
+                (tab, position) -> {
+                    switch (position) {
+                        case 0:
+                            tab.setText(R.string.desk_open);
+                            break;
+                        case 1:
+                            tab.setText(R.string.desk_closed);
+                            break;
+                    }
+                }
+        ).attach();
 
         FloatingActionButton fabStartChat = (FloatingActionButton) findViewById(R.id.fab_start_chat);
-        fabStartChat.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                final String title = "#" + System.currentTimeMillis();
-                final String userId = PrefUtils.getUserId();
-                startChat(title, userId);
-            }
+        fabStartChat.setOnClickListener(v -> {
+            final String title = "#" + System.currentTimeMillis();
+            final String userId = PrefUtils.getUserId();
+            startChat(title, userId);
         });
 
-        viewPager.addOnPageChangeListener(new ViewPager.OnPageChangeListener() {
-            @Override
-            public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {
-            }
-
+        viewPager.registerOnPageChangeCallback(new ViewPager2.OnPageChangeCallback() {
             @Override
             public void onPageSelected(int position) {
                 switch (position) {
@@ -71,10 +85,6 @@ public class InboxActivity extends AppCompatActivity implements OpenTicketsFragm
                         Event.onEvent(Event.EventListener.INBOX_CLOSE_TAB_SELECTED, null);
                         break;
                 }
-            }
-
-            @Override
-            public void onPageScrollStateChanged(int state) {
             }
         });
     }
@@ -94,12 +104,12 @@ public class InboxActivity extends AppCompatActivity implements OpenTicketsFragm
     }
 
     @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
+    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
         if (item.getItemId() == R.id.action_settings) {
             Event.onEvent(Event.EventListener.INBOX_MOVE_TO_SETTINGS, null);
             Intent intent = new Intent(this, SettingsActivity.class);
             intent.addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
-            startActivityForResult(intent, REQUEST_EXIT);
+            settingsLauncher.launch(intent);
             return true;
         } else {
             return super.onOptionsItemSelected(item);
@@ -121,18 +131,7 @@ public class InboxActivity extends AppCompatActivity implements OpenTicketsFragm
     }
 
     @Override
-    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
-
-        if (requestCode == REQUEST_EXIT) {
-            if (resultCode == RESULT_OK) {
-                finish();
-            }
-        }
-    }
-
-    @Override
-    public void onClosed(Ticket ticket) {
+    public void onClosed(@NonNull Ticket ticket) {
         if (mClosedTicketsFragment != null) {
             mClosedTicketsFragment.loadClosedTickets(true);
         }
@@ -141,42 +140,30 @@ public class InboxActivity extends AppCompatActivity implements OpenTicketsFragm
     private OpenTicketsFragment mOpenTicketsFragment;
     private ClosedTicketsFragment mClosedTicketsFragment;
 
-    private class PagerAdapter extends FragmentPagerAdapter {
-        PagerAdapter(FragmentManager fm) {
-            super(fm);
+    private class PagerAdapter extends FragmentStateAdapter {
+        PagerAdapter(FragmentActivity fa) {
+            super(fa);
         }
 
+        @NonNull
         @Override
-        public Fragment getItem(int position) {
-            switch (position) {
-                case 0:
-                    if (mOpenTicketsFragment == null) {
-                        mOpenTicketsFragment = new OpenTicketsFragment();
-                        mOpenTicketsFragment.setOnTicketClosedListener(InboxActivity.this);
-                    }
-                    return mOpenTicketsFragment;
-                case 1:
-                    if (mClosedTicketsFragment == null) {
-                        mClosedTicketsFragment = new ClosedTicketsFragment();
-                    }
-                    return mClosedTicketsFragment;
+        public Fragment createFragment(int position) {
+            if (position == 0) {
+                if (mOpenTicketsFragment == null) {
+                    mOpenTicketsFragment = new OpenTicketsFragment();
+                    mOpenTicketsFragment.setOnTicketClosedListener(InboxActivity.this);
+                }
+                return mOpenTicketsFragment;
+            } else {
+                if (mClosedTicketsFragment == null) {
+                    mClosedTicketsFragment = new ClosedTicketsFragment();
+                }
+                return mClosedTicketsFragment;
             }
-            return null;
         }
 
         @Override
-        public CharSequence getPageTitle(int position) {
-            switch (position) {
-                case 0:
-                    return getResources().getString(R.string.desk_open);
-                case 1:
-                    return getResources().getString(R.string.desk_closed);
-            }
-            return null;
-        }
-
-        @Override
-        public int getCount() {
+        public int getItemCount() {
             return 2;
         }
     }

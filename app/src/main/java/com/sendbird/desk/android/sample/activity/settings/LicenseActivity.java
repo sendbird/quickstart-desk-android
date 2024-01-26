@@ -1,21 +1,24 @@
 package com.sendbird.desk.android.sample.activity.settings;
 
 import android.content.res.TypedArray;
-import android.os.AsyncTask;
 import android.os.Bundle;
-import android.support.annotation.Nullable;
-import android.support.v7.app.ActionBar;
-import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.Toolbar;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.appcompat.app.ActionBar;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.Toolbar;
+import androidx.core.content.res.ResourcesCompat;
+
 import com.sendbird.desk.android.sample.R;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
+import java.util.concurrent.Executors;
 
 public class LicenseActivity extends AppCompatActivity {
     @Override
@@ -32,30 +35,19 @@ public class LicenseActivity extends AppCompatActivity {
             actionBar.setDisplayHomeAsUpEnabled(true);
 
             TypedArray ta = obtainStyledAttributes(new int[]{R.attr.deskNavigationIcon});
-            actionBar.setHomeAsUpIndicator(getResources().getDrawable(ta.getResourceId(0, R.drawable.btn_back)));
+            actionBar.setHomeAsUpIndicator(ResourcesCompat.getDrawable(getResources(), ta.getResourceId(0, R.drawable.btn_back), null));
             ta.recycle();
         }
 
         final ProgressBar progressBar = (ProgressBar) findViewById(R.id.progress_bar);
-        progressBar.setVisibility(View.INVISIBLE);
-
-        new AsyncTask<Void, Void, String>() {
-            @Override
-            protected void onPreExecute() {
-                progressBar.setVisibility(View.VISIBLE);
-            }
-
-            @Override
-            protected String doInBackground(Void... params) {
-                return loadLicenseTxtFile();
-            }
-
-            @Override
-            protected void onPostExecute(String s) {
+        progressBar.setVisibility(View.VISIBLE);
+        Executors.newSingleThreadExecutor().execute(() -> {
+            final String s = loadLicenseTxtFile();
+            progressBar.post(() -> {
                 progressBar.setVisibility(View.INVISIBLE);
                 ((TextView)findViewById(R.id.text_view_license_details)).setText(s);
-            }
-        }.execute();
+            });
+        });
     }
 
     private String loadLicenseTxtFile() {
@@ -94,7 +86,7 @@ public class LicenseActivity extends AppCompatActivity {
     }
 
     @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
+    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
         if (item.getItemId() == android.R.id.home) {
             finish();
             return true;

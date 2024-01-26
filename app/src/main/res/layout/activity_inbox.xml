@@ -5,26 +5,33 @@
     android:layout_height="match_parent"
     android:background="?attr/deskInboxBackground">
 
-    <android.support.v7.widget.Toolbar
+    <androidx.appcompat.widget.Toolbar
         style="?attr/deskToolbarStyle"
         android:id="@+id/toolbar"
         android:elevation="4dp"/>
 
-    <android.support.v4.view.ViewPager
-        android:id="@+id/pager"
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
+        android:orientation="vertical"
         android:layout_below="@id/toolbar"
         android:elevation="4dp">
 
-        <android.support.design.widget.TabLayout
-            style="?attr/deskInboxTabLayoutStyle"
+        <com.google.android.material.tabs.TabLayout
             android:id="@+id/tab_layout"
-            android:elevation="4dp"/>
+            style="?attr/deskInboxTabLayoutStyle"
+            android:elevation="4dp"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" />
 
-    </android.support.v4.view.ViewPager>
+        <androidx.viewpager2.widget.ViewPager2
+            android:id="@+id/pager"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1" />
+    </LinearLayout>
 
-    <android.support.design.widget.FloatingActionButton
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
         android:id="@+id/fab_start_chat"
         android:layout_width="56dp"
         android:layout_height="56dp"

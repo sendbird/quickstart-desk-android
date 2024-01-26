@@ -1,23 +1,15 @@
 package com.sendbird.desk.android.sample.utils;
 
-import android.annotation.TargetApi;
 import android.app.DownloadManager;
 import android.content.ContentUris;
 import android.content.Context;
 import android.database.Cursor;
 import android.net.Uri;
-import android.os.Build;
 import android.os.Environment;
 import android.provider.DocumentsContract;
 import android.provider.MediaStore;
 
-import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.Reader;
 import java.text.DecimalFormat;
 import java.util.Hashtable;
 
@@ -29,13 +21,10 @@ public class FileUtils {
     private FileUtils() {
     }
 
-    @TargetApi(Build.VERSION_CODES.KITKAT)
     public static Hashtable<String, Object> getFileInfo(final Context context, final Uri uri) {
 
-        final boolean isKitKat = Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT;
-
         // DocumentProvider
-        if (isKitKat && DocumentsContract.isDocumentUri(context, uri)) {
+        if (DocumentsContract.isDocumentUri(context, uri)) {
             // ExternalStorageProvider
             if (isExternalStorageDocument(uri)) {
                 final String docId = DocumentsContract.getDocumentId(uri);
@@ -45,7 +34,10 @@ public class FileUtils {
                 if ("primary".equalsIgnoreCase(type)) {
                     Hashtable<String, Object> value = new Hashtable<>();
                     value.put("path", Environment.getExternalStorageDirectory() + "/" + split[1]);
-                    value.put("size", (int) new File((String) value.get("path")).length());
+                    final String path = (String) value.get("path");
+                    if (path != null) {
+                        value.put("size", (int) new File(path).length());
+                    }
                     value.put("mime", "application/octet-stream");
 
                     return value;
@@ -56,7 +48,7 @@ public class FileUtils {
 
                 final String id = DocumentsContract.getDocumentId(uri);
                 final Uri contentUri = ContentUris.withAppendedId(
-                        Uri.parse("content://downloads/public_downloads"), Long.valueOf(id));
+                        Uri.parse("content://downloads/public_downloads"), Long.parseLong(id));
 
                 return getDataColumn(context, contentUri, null, null);
             }
@@ -85,29 +77,16 @@ public class FileUtils {
         }
         // MediaStore (and general)
         else if ("content".equalsIgnoreCase(uri.getScheme())) {
-            if (isNewGooglePhotosUri(uri)) {
-                Hashtable<String, Object> value = getDataColumn(context, uri, null, null);
-//                Bitmap bitmap;
-//                try {
-//                    InputStream input = context.getContentResolver().openInputStream(uri);
-//                    bitmap = BitmapFactory.decodeStream(input);
-//                    File file = File.createTempFile("desk", ".jpg");
-//                    bitmap.compress(Bitmap.CompressFormat.JPEG, 80, new BufferedOutputStream(new FileOutputStream(file)));
-//                    value.put("path", file.getAbsolutePath());
-//                    value.put("size", (int)file.length());
-//                } catch (Exception e) {
-//                    e.printStackTrace();
-//                }
-                return value;
-            } else {
-                return getDataColumn(context, uri, null, null);
-            }
+            return getDataColumn(context, uri, null, null);
         }
         // File
         else if ("file".equalsIgnoreCase(uri.getScheme())) {
             Hashtable<String, Object> value = new Hashtable<>();
             value.put("path", uri.getPath());
-            value.put("size", (int) new File((String) value.get("path")).length());
+            final String path = (String) value.get("path");
+            if (path != null) {
+                value.put("size", (int) new File(path).length());
+            }
             value.put("mime", "application/octet-stream");
 
             return value;
@@ -190,10 +169,6 @@ public class FileUtils {
         return "com.android.providers.media.documents".equals(uri.getAuthority());
     }
 
-    private static boolean isNewGooglePhotosUri(Uri uri) {
-        return "com.google.android.apps.photos.contentprovider".equals(uri.getAuthority());
-    }
-
     /**
      * Downloads a file using DownloadManager.
      */
@@ -202,10 +177,8 @@ public class FileUtils {
         downloadRequest.setTitle(fileName);
 
         // in order for this if to run, you must use the android 3.2 to compile your app
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
-            downloadRequest.allowScanningByMediaScanner();
-            downloadRequest.setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED);
-        }
+        downloadRequest.allowScanningByMediaScanner();
+        downloadRequest.setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED);
 
         downloadRequest.setDestinationInExternalPublicDir(Environment.DIRECTORY_DOWNLOADS, fileName);
 
@@ -231,26 +204,4 @@ public class FileUtils {
         return fileSizeString;
     }
 
-    public static void saveToFile(File file, String data) throws IOException {
-        File tempFile = File.createTempFile("sendbird", "temp");
-        FileOutputStream fos = new FileOutputStream(tempFile);
-        fos.write(data.getBytes());
-        fos.close();
-
-        if (!tempFile.renameTo(file)) {
-            throw new IOException("Error to rename file to " + file.getAbsolutePath());
-        }
-    }
-
-    public static String loadFromFile(File file) throws IOException {
-        FileInputStream stream = new FileInputStream(file);
-        Reader reader = new BufferedReader(new InputStreamReader(stream));
-        StringBuilder builder = new StringBuilder();
-        char[] buffer = new char[8192];
-        int read;
-        while ((read = reader.read(buffer, 0, buffer.length)) > 0) {
-            builder.append(buffer, 0, read);
-        }
-        return builder.toString();
-    }
 }

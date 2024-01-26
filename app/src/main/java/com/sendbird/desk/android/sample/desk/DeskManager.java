@@ -15,18 +15,23 @@ import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.net.Uri;
 import android.os.Build;
-import android.support.v4.app.NotificationCompat;
-import android.support.v4.app.TaskStackBuilder;
+
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.core.app.NotificationCompat;
+import androidx.core.app.TaskStackBuilder;
 
 import com.google.firebase.messaging.RemoteMessage;
-import com.sendbird.android.AdminMessage;
-import com.sendbird.android.BaseChannel;
-import com.sendbird.android.BaseMessage;
-import com.sendbird.android.FileMessage;
-import com.sendbird.android.GroupChannel;
-import com.sendbird.android.SendBird;
-import com.sendbird.android.SendBirdException;
-import com.sendbird.android.UserMessage;
+import com.sendbird.android.ConnectionState;
+import com.sendbird.android.SendbirdChat;
+import com.sendbird.android.channel.BaseChannel;
+import com.sendbird.android.channel.GroupChannel;
+import com.sendbird.android.exception.SendbirdException;
+import com.sendbird.android.handler.GroupChannelHandler;
+import com.sendbird.android.message.AdminMessage;
+import com.sendbird.android.message.BaseMessage;
+import com.sendbird.android.message.FileMessage;
+import com.sendbird.android.message.UserMessage;
 import com.sendbird.android.shadow.com.google.gson.JsonElement;
 import com.sendbird.android.shadow.com.google.gson.JsonParser;
 import com.sendbird.desk.android.SendBirdDesk;
@@ -54,13 +59,14 @@ public class DeskManager {
 
 
     //+ public methods
-    public synchronized static void init(Context context) {
+    public synchronized static void init(@NonNull Context context) {
         if (sInstance == null) {
             sInstance = new DeskManager(context);
             sInstance.addGlobalTicketHandler(context);
         }
     }
 
+    @NonNull
     public synchronized static DeskManager getInstance() {
         if (sInstance == null) {
             throw new RuntimeException("DeskManager instance hasn't been initialized.");
@@ -71,15 +77,15 @@ public class DeskManager {
 
 
     //+ push notification
-    public static void updatePushToken(String token) {
-        if (token != null && token.length() > 0) {
+    public static void updatePushToken(@NonNull String token) {
+        if (token.length() > 0) {
             PrefUtils.setPushToken(token);
 
             boolean pushPref = PrefUtils.getPushNotification();
 
             // If connection has been made and push preference is on, registers the token.
-            if (SendBird.getConnectionState() == SendBird.ConnectionState.OPEN && pushPref) {
-                SendBird.registerPushTokenForCurrentUser(token, false, null);
+            if (SendbirdChat.getConnectionState() == ConnectionState.OPEN && pushPref) {
+                SendbirdChat.registerPushToken(token, false, null);
             }
         }
     }
@@ -88,19 +94,19 @@ public class DeskManager {
         mHandlePushNotification = handle;
     }
 
-    public static void showPushNotification(Context context, BaseChannel baseChannel, BaseMessage baseMessage) {
+    public static void showPushNotification(@NonNull Context context, @NonNull BaseChannel baseChannel, @NonNull BaseMessage baseMessage) {
         String message = "";
         String channelUrl = baseChannel.getUrl();
         String title = baseChannel.getName();
 
         boolean showNoti = true;
 
+        final String nickname = baseMessage.getSender() != null ? baseMessage.getSender().getNickname() : "(Unknown)";
         if (baseMessage instanceof UserMessage) {
             UserMessage userMessage = (UserMessage) baseMessage;
-            message = userMessage.getSender().getNickname() + ": " + userMessage.getMessage();
+            message = nickname + ": " + userMessage.getMessage();
         } else if (baseMessage instanceof FileMessage) {
-            FileMessage fileMessage = (FileMessage) baseMessage;
-            message = fileMessage.getSender().getNickname() + ": (FILE)";
+            message = nickname + ": (FILE)";
         } else if (baseMessage instanceof AdminMessage) {
             message = ((AdminMessage) baseMessage).getMessage();
 
@@ -114,7 +120,7 @@ public class DeskManager {
         }
     }
 
-    public static void buildNotification(Context context, String message, String title, String channelUrl) {
+    public static void buildNotification(@NonNull Context context, @Nullable String message, @Nullable String title, @Nullable String channelUrl) {
         Intent intent = new Intent(context, ChatActivity.class);
         intent.putExtra(ChatActivity.EXTRA_CHANNEL_URL, channelUrl);
         intent.putExtra(ChatActivity.EXTRA_TITLE, title);
@@ -123,7 +129,7 @@ public class DeskManager {
         TaskStackBuilder stackBuilder = TaskStackBuilder.create(context);
         stackBuilder.addParentStack(ChatActivity.class);
         stackBuilder.addNextIntent(intent);
-        PendingIntent pendingIntent = stackBuilder.getPendingIntent((int) System.currentTimeMillis(), PendingIntent.FLAG_UPDATE_CURRENT);
+        PendingIntent pendingIntent = stackBuilder.getPendingIntent((int) System.currentTimeMillis(), PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
 
         TypedArray ta = context.obtainStyledAttributes(R.style.Theme_Desk_Custom,
                 new int[]{R.attr.deskNotificationIcon, R.attr.deskNotificationLargeIcon, R.attr.deskServiceName});
@@ -156,11 +162,13 @@ public class DeskManager {
         notificationManager.notify(0, notificationBuilder.build());
     }
 
-    public static void parsePushMessage(RemoteMessage remoteMessage, ParsePushMessageHandler handler) {
+    public static void parsePushMessage(@NonNull RemoteMessage remoteMessage, @Nullable ParsePushMessageHandler handler) {
         if (handler != null) {
             try {
                 if (remoteMessage.getData().size() > 0 && remoteMessage.getData().containsKey("sendbird")) {
-                    JsonElement payload = new JsonParser().parse(remoteMessage.getData().get("sendbird"));
+                    String data = remoteMessage.getData().get("sendbird");
+                    if (data == null) return;
+                    JsonElement payload = (JsonElement) JsonParser.parseString(data);
 
                     String message = remoteMessage.getData().get("message");
                     String channelName = payload.getAsJsonObject().get("channel").getAsJsonObject().get("name").getAsString();
@@ -173,26 +181,24 @@ public class DeskManager {
                 e.printStackTrace();
             }
 
-            handler.onResult(null, null, null, new SendBirdException("Wrong message type."));
+            handler.onResult(null, null, null, new SendbirdException("Wrong message type."));
         }
     }
 
     public interface ParsePushMessageHandler {
-        void onResult(String message, String channelName, String channelUrl, SendBirdException e);
+        void onResult(@Nullable String message, @Nullable String channelName, @Nullable String channelUrl, @Nullable SendbirdException e);
     }
     //- push notification
 
 
     //+ ticket methods
-    public static boolean isTicketClosed(Ticket ticket) {
-        boolean result = false;
-        if (ticket != null && ticket.getStatus().equals("CLOSED")) {
-            result = true;
-        }
-        return result;
+    public static boolean isTicketClosed(@Nullable Ticket ticket) {
+        return ticket != null && ticket.getStatus2().equals("CLOSED");
     }
 
-    public static BaseMessage getLastMessage(Ticket ticket) {
+    @Nullable
+    public static BaseMessage getLastMessage(@Nullable Ticket ticket) {
+        if (ticket == null) return null;
         BaseMessage lastMessage = null;
         GroupChannel groupChannel = ticket.getChannel();
         if (groupChannel != null) {
@@ -201,7 +207,8 @@ public class DeskManager {
         return lastMessage;
     }
 
-    public static int getUnreadMessageCount(Ticket ticket) {
+    public static int getUnreadMessageCount(@Nullable Ticket ticket) {
+        if (ticket == null) return 0;
         int unreadMessageCount = 0;
         GroupChannel groupChannel = ticket.getChannel();
         if (groupChannel != null) {
@@ -210,28 +217,28 @@ public class DeskManager {
         return unreadMessageCount;
     }
 
-    public static void addTicketHandler(String identifier, final TicketHandler handler) {
+    public static void addTicketHandler(@Nullable String identifier, final @Nullable TicketHandler handler) {
         if (identifier == null || identifier.length() == 0 || handler == null) {
             return;
         }
 
-        SendBird.addChannelHandler(identifier, new SendBird.ChannelHandler() {
+        SendbirdChat.addChannelHandler(identifier, new GroupChannelHandler() {
             @Override
-            public void onMessageReceived(BaseChannel baseChannel, BaseMessage baseMessage) {
+            public void onMessageReceived(@NonNull BaseChannel baseChannel, @NonNull BaseMessage baseMessage) {
                 if (!SendBirdDesk.isDeskChannel(baseChannel)) return;
 
                 handler.onMessageReceived(baseChannel, baseMessage);
             }
 
             @Override
-            public void onChannelChanged(BaseChannel channel) {
+            public void onChannelChanged(@NonNull BaseChannel channel) {
                 if (!SendBirdDesk.isDeskChannel(channel)) return;
 
                 handler.onChannelChanged(channel);
             }
 
             @Override
-            public void onMessageUpdated(BaseChannel channel, BaseMessage message) {
+            public void onMessageUpdated(@NonNull BaseChannel channel, @NonNull BaseMessage message) {
                 if (!SendBirdDesk.isDeskChannel(channel)) return;
 
                 handler.onMessageUpdated(channel, message);
@@ -241,23 +248,24 @@ public class DeskManager {
         getInstance().mTicketHandlers.put(identifier, handler);
     }
 
-    public static TicketHandler removeTicketHandler(String identifier) {
+    @Nullable
+    public static TicketHandler removeTicketHandler(@Nullable String identifier) {
         if (identifier == null || identifier.length() == 0) {
             return null;
         }
 
-        SendBird.removeChannelHandler(identifier);
+        SendbirdChat.removeChannelHandler(identifier);
 
         return getInstance().mTicketHandlers.remove(identifier);
     }
 
     public static abstract class TicketHandler {
-        public abstract void onMessageReceived(BaseChannel baseChannel, BaseMessage baseMessage);
+        public abstract void onMessageReceived(@NonNull BaseChannel baseChannel, @NonNull BaseMessage baseMessage);
 
-        public void onChannelChanged(BaseChannel channel) {
+        public void onChannelChanged(@NonNull BaseChannel channel) {
         }
 
-        public void onMessageUpdated(BaseChannel channel, BaseMessage message) {
+        public void onMessageUpdated(@NonNull BaseChannel channel, @NonNull BaseMessage message) {
         }
     }
     //- ticket methods
@@ -274,7 +282,7 @@ public class DeskManager {
     private void addGlobalTicketHandler(final Context context) {
         addTicketHandler(TICKET_HANDLER_ID_GLOBAL, new TicketHandler() {
             @Override
-            public void onMessageReceived(BaseChannel baseChannel, BaseMessage baseMessage) {
+            public void onMessageReceived(@NonNull BaseChannel baseChannel, @NonNull BaseMessage baseMessage) {
                 if (PrefUtils.isPushNotificationEnabled() && mHandlePushNotification) {
                     showPushNotification(context, baseChannel, baseMessage);
                 }
@@ -285,7 +293,7 @@ public class DeskManager {
 
 
     //+ network receiver
-    public class NetworkReceiver extends BroadcastReceiver {
+    public static class NetworkReceiver extends BroadcastReceiver {
         boolean needReconnect;
 
         @Override
@@ -299,7 +307,7 @@ public class DeskManager {
                     needReconnect = false;
 
                     try {
-                        SendBird.reconnect();
+                        SendbirdChat.reconnect();
                     } catch (RuntimeException e) {
                         e.printStackTrace();
                     }
