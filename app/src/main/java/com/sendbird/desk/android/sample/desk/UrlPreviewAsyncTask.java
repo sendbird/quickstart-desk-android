@@ -1,6 +1,7 @@
 package com.sendbird.desk.android.sample.desk;
 
-import android.os.AsyncTask;
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
@@ -9,17 +10,13 @@ import org.jsoup.select.Elements;
 
 import java.util.Hashtable;
 
-abstract class UrlPreviewAsyncTask extends AsyncTask<String, Void, UrlPreviewInfo> {
+public class UrlPreviewAsyncTask {
 
     private static final int TIMEOUT_MILLIS = 10 * 1000;
 
-    @Override
-    protected abstract void onPostExecute(UrlPreviewInfo info);
-
-    @Override
-    protected UrlPreviewInfo doInBackground(String... params) {
+    @Nullable
+    public UrlPreviewInfo doInBackground(@NonNull String url) {
         Hashtable<String, String> result = new Hashtable<>();
-        String url = params[0];
         Document doc;
         try {
             doc = Jsoup.connect(url).followRedirects(true).timeout(TIMEOUT_MILLIS).get();
@@ -94,7 +91,8 @@ abstract class UrlPreviewAsyncTask extends AsyncTask<String, Void, UrlPreviewInf
                 result.put("url", url);
             }
 
-            if (result.get("url") != null && result.get("url").startsWith("//")) {
+            final String urlString = result.get("url");
+            if (urlString != null && urlString.startsWith("//")) {
                 result.put("url", "http:" + result.get("url"));
             }
 
@@ -102,7 +100,8 @@ abstract class UrlPreviewAsyncTask extends AsyncTask<String, Void, UrlPreviewInf
                 result.put("site_name", result.get("title"));
             }
 
-            if (result.get("image") != null && result.get("image").startsWith("//")) {
+            final String imageString = result.get("image");
+            if (imageString != null && imageString.startsWith("//")) {
                 result.put("image", "http:" + result.get("image"));
             }
 

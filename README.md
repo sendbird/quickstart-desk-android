@@ -8,7 +8,7 @@ Built with Sendbird Chat platform, Sendbird Desk is a live chat customer support
 
 ### More about Sendbird Desk for Android
 
-Find out more about Sendbird Desk for Android on [Desk for Android doc](https://sendbird.com/docs/desk/v1/android/getting-started/about-desk-sdk). If you need any help in resolving any issues or have questions, visit [our community](https://community.sendbird.com).
+Find out more about Sendbird Desk for Android on [Desk for Android doc](https://sendbird.com/docs/desk/sdk/v1/android/quickstart/create-first-ticket). If you need any help in resolving any issues or have questions, visit [our community](https://community.sendbird.com).
 
 <br />
 
@@ -23,7 +23,7 @@ This section shows you the prerequisites you need for testing Sendbird Desk for 
 
 ### Try the sample app using your data 
 
-If you would like to customize the sample app for your usage, you can replace the default sample app ID with your ID - which you can obtain by [creating your Sendbird application from the dashboard](https://sendbird.com/docs/chat/v3/android/getting-started/install-chat-sdk#2-step-1-create-a-sendbird-application-from-your-dashboard).
+If you would like to customize the sample app for your usage, you can replace the default sample app ID with your ID - which you can obtain by [creating your Sendbird application from the dashboard](https://sendbird.com/docs/chat/sdk/v4/android/getting-started/send-first-message#2-before-you-start).
 
 > Note: After creating the Sendbird application, please be sure to contact [sales](https://get.sendbird.com/talk-to-sales.html) to enable the **Desk** menu onto the dashboard. Currently, Sendbird Desk is available only for **free-trial** or **Enterprise** plans.
 
@@ -54,8 +54,8 @@ Then, add the dependency to the project's top-level `build.gradle` file.
 
 ```gradle
 dependencies {
-    implementation 'com.sendbird.sdk:sendbird-android-sdk:3.0.160'
-    implementation 'com.sendbird.sdk:sendbird-desk-android-sdk:1.0.14'
+    implementation 'com.sendbird.sdk:sendbird-chat:4.14.0'
+    implementation 'com.sendbird.sdk:sendbird-desk-android-sdk:1.1.4'
 }
 ```
 

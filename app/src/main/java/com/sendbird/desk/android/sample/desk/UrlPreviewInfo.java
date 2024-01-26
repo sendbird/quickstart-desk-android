@@ -1,5 +1,7 @@
 package com.sendbird.desk.android.sample.desk;
 
+import androidx.annotation.Nullable;
+
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -50,26 +52,32 @@ public class UrlPreviewInfo {
 
 
     //+ public methods
+    @Nullable
     public String getUrl() {
         return mUrl;
     }
 
+    @Nullable
     public String getSiteName() {
         return mSiteName;
     }
 
+    @Nullable
     public String getTitle() {
         return mTitle;
     }
 
+    @Nullable
     public String getDescription() {
         return mDescription;
     }
 
+    @Nullable
     public String getImageUrl() {
         return mImageUrl;
     }
 
+    @Nullable
     public String getDomainName() {
         String domainName = "";
         try {

@@ -18,13 +18,10 @@ public class SoftInputUtils {
 
     public static void showSoftKeyboard(final EditText editText) {
         final InputMethodManager imm = (InputMethodManager) editText.getContext().getSystemService(Context.INPUT_METHOD_SERVICE);
-        editText.postDelayed(new Runnable() {
-            @Override
-            public void run() {
-                editText.requestFocus();
-                if (imm != null) {
-                    imm.showSoftInput(editText, 0);
-                }
+        editText.postDelayed(() -> {
+            editText.requestFocus();
+            if (imm != null) {
+                imm.showSoftInput(editText, 0);
             }
         }, 100);
     }

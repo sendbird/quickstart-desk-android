@@ -48,7 +48,7 @@
                     android:lineSpacingExtra="-0.8sp"
                     android:layout_marginBottom="30dp"/>
 
-                <android.support.design.widget.TextInputLayout
+                <com.google.android.material.textfield.TextInputLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginBottom="30dp"
@@ -65,9 +65,9 @@
                         android:textSize="15sp"
                         android:textColorHint="#c5c5c5"/>
 
-                </android.support.design.widget.TextInputLayout>
+                </com.google.android.material.textfield.TextInputLayout>
 
-                <android.support.design.widget.TextInputLayout
+                <com.google.android.material.textfield.TextInputLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginBottom="30dp">
@@ -81,7 +81,7 @@
                         android:textSize="15sp"
                         android:textColorHint="#c5c5c5"/>
 
-                </android.support.design.widget.TextInputLayout>
+                </com.google.android.material.textfield.TextInputLayout>
 
                 <Button
                     android:id="@+id/btn_connect"

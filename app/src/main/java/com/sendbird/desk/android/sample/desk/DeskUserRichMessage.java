@@ -1,13 +1,22 @@
 package com.sendbird.desk.android.sample.desk;
 
-import com.sendbird.android.BaseChannel;
-import com.sendbird.android.BaseMessage;
-import com.sendbird.android.GroupChannel;
-import com.sendbird.android.SendBirdException;
-import com.sendbird.android.UserMessage;
+import android.os.Handler;
+import android.os.Looper;
+
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+
+import com.sendbird.android.channel.GroupChannel;
+import com.sendbird.android.exception.SendbirdException;
+import com.sendbird.android.message.BaseMessage;
+import com.sendbird.android.message.UserMessage;
+import com.sendbird.android.params.UserMessageUpdateParams;
 import com.sendbird.android.shadow.com.google.gson.JsonElement;
 import com.sendbird.android.shadow.com.google.gson.JsonObject;
 import com.sendbird.android.shadow.com.google.gson.JsonParser;
+
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 public class DeskUserRichMessage {
 
@@ -20,10 +29,10 @@ public class DeskUserRichMessage {
 
 
     //+ public methods
-    public static boolean isInquireCloserType(BaseMessage message) {
+    public static boolean isInquireCloserType(@Nullable BaseMessage message) {
         boolean result = false;
         if (is(message)) {
-            JsonElement el = new JsonParser().parse(((UserMessage)message).getData());
+            JsonElement el = (JsonElement) JsonParser.parseString(((UserMessage)message).getData());
             if (!el.isJsonNull() && el.getAsJsonObject().has("type")
                     && el.getAsJsonObject().get("type").getAsString().equals(EVENT_TYPE_INQUIRE_CLOSURE)) {
                 result = true;
@@ -32,7 +41,7 @@ public class DeskUserRichMessage {
         return result;
     }
 
-    public static boolean isInquireCloserTypeWaitingState(BaseMessage message) {
+    public static boolean isInquireCloserTypeWaitingState(@Nullable BaseMessage message) {
         boolean result = false;
         String state = getInquireCloserTypeState(message);
         if (state != null && state.equals(INQUIRE_CLOSURE_STATE_WAITING)) {
@@ -41,7 +50,7 @@ public class DeskUserRichMessage {
         return result;
     }
 
-    public static boolean isInquireCloserTypeConfirmedState(BaseMessage message) {
+    public static boolean isInquireCloserTypeConfirmedState(@Nullable BaseMessage message) {
         boolean result = false;
         String state = getInquireCloserTypeState(message);
         if (state != null && state.equals(INQUIRE_CLOSURE_STATE_CONFIRMED)) {
@@ -50,7 +59,7 @@ public class DeskUserRichMessage {
         return result;
     }
 
-    public static boolean isInquireCloserTypeDeclinedState(BaseMessage message) {
+    public static boolean isInquireCloserTypeDeclinedState(@Nullable BaseMessage message) {
         boolean result = false;
         String state = getInquireCloserTypeState(message);
         if (state != null && state.equals(INQUIRE_CLOSURE_STATE_DECLINED)) {
@@ -59,10 +68,10 @@ public class DeskUserRichMessage {
         return result;
     }
 
-    public static boolean isUrlPreviewType(BaseMessage message) {
+    public static boolean isUrlPreviewType(@Nullable BaseMessage message) {
         boolean result = false;
         if (is(message)) {
-            JsonElement el = new JsonParser().parse(((UserMessage)message).getData());
+            JsonElement el = (JsonElement) JsonParser.parseString(((UserMessage)message).getData());
             if (!el.isJsonNull() && el.getAsJsonObject().has("type")
                     && el.getAsJsonObject().get("type").getAsString().equals(EVENT_TYPE_URL_PREVIEW)) {
                 result = true;
@@ -71,10 +80,11 @@ public class DeskUserRichMessage {
         return result;
     }
 
-    public static UrlPreviewInfo getUrlPreviewInfo(BaseMessage message) {
+    @Nullable
+    public static UrlPreviewInfo getUrlPreviewInfo(@Nullable BaseMessage message) {
         UrlPreviewInfo info = null;
         try {
-            if (isUrlPreviewType(message)) {
+            if (message != null && isUrlPreviewType(message)) {
                 info = new UrlPreviewInfo(((UserMessage)message).getData());
             }
         } catch (Exception e) {
@@ -83,56 +93,63 @@ public class DeskUserRichMessage {
         return info;
     }
 
-    public static void updateUserMessageWithUrl(final GroupChannel channel, final BaseMessage message, final String text, String url, final UpdateUserMessageWithUrlHandler handler) {
-        new UrlPreviewAsyncTask() {
-            @Override
-            protected void onPostExecute(UrlPreviewInfo info) {
+
+    public static void updateUserMessageWithUrl(final @NonNull GroupChannel channel, final @NonNull BaseMessage message, final @Nullable String text, @Nullable String url, final @Nullable UpdateUserMessageWithUrlHandler handler) {
+        final ExecutorService service = Executors.newSingleThreadExecutor();
+        final Handler main = new Handler(Looper.getMainLooper());
+        if (url == null) return;
+
+        service.execute(() -> {
+            UrlPreviewAsyncTask task = new UrlPreviewAsyncTask();
+            UrlPreviewInfo info = task.doInBackground(url);
+            if (info == null) return;
+            main.post(() -> {
                 try {
                     String jsonString = info.toJsonString();
-                    channel.updateUserMessage(message.getMessageId(), text, jsonString,
-                            USER_RICH_MESSAGE_CUSTOM_TYPE, new BaseChannel.UpdateUserMessageHandler() {
-                                @Override
-                                public void onUpdated(UserMessage userMessage, SendBirdException e) {
-                                    if (e != null) {
-                                        if (handler != null) {
-                                            handler.onResult(null, e);
-                                        }
-                                        return;
-                                    }
+                    UserMessageUpdateParams params = new UserMessageUpdateParams();
+                    params.setMessage(text);
+                    params.setData(jsonString);
+                    params.setCustomType(USER_RICH_MESSAGE_CUSTOM_TYPE);
+                    channel.updateUserMessage(message.getMessageId(), params, (userMessage, e) -> {
+                        if (e != null) {
+                            if (handler != null) {
+                                handler.onResult(null, e);
+                            }
+                            return;
+                        }
 
-                                    if (handler != null) {
-                                        handler.onResult(userMessage, null);
-                                    }
-                                }
-                            });
+                        if (handler != null) {
+                            handler.onResult(userMessage, null);
+                        }
+                    });
                 } catch (Exception e) {
                     e.printStackTrace();
                     if (handler != null) {
-                        handler.onResult(null, new SendBirdException("Url parsing error."));
+                        handler.onResult(null, new SendbirdException("Url parsing error."));
                     }
                 }
-            }
-        }.execute(url);
+            });
+        });
     }
     //- public methods
 
 
     //+ public handlers
     public interface UpdateUserMessageWithUrlHandler {
-        void onResult(UserMessage userMessage, SendBirdException e);
+        void onResult(@Nullable UserMessage userMessage, @Nullable SendbirdException e);
     }
     //- public handlers
 
 
     //+ private methods
     private static boolean is(BaseMessage message) {
-        return (message != null && message instanceof UserMessage && ((UserMessage)message).getCustomType().equals(USER_RICH_MESSAGE_CUSTOM_TYPE));
+        return (message instanceof UserMessage && ((UserMessage) message).getCustomType().equals(USER_RICH_MESSAGE_CUSTOM_TYPE));
     }
 
     private static String getInquireCloserTypeState(BaseMessage message) {
         String state = null;
         if (isInquireCloserType(message)) {
-            final JsonObject data = new JsonParser().parse(((UserMessage)message).getData()).getAsJsonObject();
+            final JsonObject data = (JsonObject) JsonParser.parseString(((UserMessage)message).getData()).getAsJsonObject();
             final JsonObject body = data.get("body").getAsJsonObject();
             state = body.get("state").getAsString();
         }
