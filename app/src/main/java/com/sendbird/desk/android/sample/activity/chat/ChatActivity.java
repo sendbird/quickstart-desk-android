@@ -261,6 +261,8 @@ public class ChatActivity extends AppCompatActivity {
         mLayoutReply.setVisibility(View.GONE);
         mUploadingProgressBar.setVisibility(View.INVISIBLE);
         mBtnSend.setVisibility(View.INVISIBLE);
+        mListAdapter = new MessageListAdapter(ChatActivity.this);
+        mListView.setAdapter(mListAdapter);
 
         mListView.setOnScrollListener(new AbsListView.OnScrollListener() {
             @Override
@@ -401,10 +403,9 @@ public class ChatActivity extends AppCompatActivity {
                     if (mListAdapter == null) {
                         mListAdapter = new MessageListAdapter(ChatActivity.this);
                         mListView.setAdapter(mListAdapter);
-
-                        mProgressBar.setVisibility(View.INVISIBLE);
-                        mLayoutReply.setVisibility(View.VISIBLE);
                     }
+                    mProgressBar.setVisibility(View.INVISIBLE);
+                    mLayoutReply.setVisibility(View.VISIBLE);
 
                     if (mChannel != null) {
                         mChannel.markAsRead(null);
@@ -535,6 +536,7 @@ public class ChatActivity extends AppCompatActivity {
                 data.put("ticket_id", String.valueOf(mTicket.getId()));
                 Event.onEvent(Event.EventListener.CHAT_ENTER, data);
             }
+            doRefresh();
         });
     }
 
