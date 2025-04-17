@@ -24,7 +24,7 @@ public class MyApplication extends Application {
         NONE
     }
 
-    private static final String APP_ID = "52292344-3DA9-47ED-8BB1-587BB0D36F4D";    // product
+    private static final String APP_ID = "C85078C6-1E29-4A05-95C9-A68DDEEEB4D6";    // product
     private static MutableLiveData<InitState> initState = new MutableLiveData<>(InitState.NONE);
 
     @NonNull

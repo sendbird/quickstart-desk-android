@@ -6,14 +6,14 @@ import android.os.Looper;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
 import com.sendbird.android.channel.GroupChannel;
 import com.sendbird.android.exception.SendbirdException;
 import com.sendbird.android.message.BaseMessage;
 import com.sendbird.android.message.UserMessage;
 import com.sendbird.android.params.UserMessageUpdateParams;
-import com.sendbird.android.shadow.com.google.gson.JsonElement;
-import com.sendbird.android.shadow.com.google.gson.JsonObject;
-import com.sendbird.android.shadow.com.google.gson.JsonParser;
 
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;

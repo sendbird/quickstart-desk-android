@@ -2,10 +2,10 @@ package com.sendbird.desk.android.sample.desk;
 
 import androidx.annotation.Nullable;
 
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
 import com.sendbird.android.message.AdminMessage;
 import com.sendbird.android.message.BaseMessage;
-import com.sendbird.android.shadow.com.google.gson.JsonObject;
-import com.sendbird.android.shadow.com.google.gson.JsonParser;
 
 public class DeskAdminMessage {
 

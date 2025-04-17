@@ -22,6 +22,8 @@ import androidx.core.app.NotificationCompat;
 import androidx.core.app.TaskStackBuilder;
 
 import com.google.firebase.messaging.RemoteMessage;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonParser;
 import com.sendbird.android.ConnectionState;
 import com.sendbird.android.SendbirdChat;
 import com.sendbird.android.channel.BaseChannel;
@@ -32,8 +34,6 @@ import com.sendbird.android.message.AdminMessage;
 import com.sendbird.android.message.BaseMessage;
 import com.sendbird.android.message.FileMessage;
 import com.sendbird.android.message.UserMessage;
-import com.sendbird.android.shadow.com.google.gson.JsonElement;
-import com.sendbird.android.shadow.com.google.gson.JsonParser;
 import com.sendbird.desk.android.SendBirdDesk;
 import com.sendbird.desk.android.Ticket;
 import com.sendbird.desk.android.sample.R;
