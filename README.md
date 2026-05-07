@@ -55,7 +55,7 @@ Then, add the dependency to the project's top-level `build.gradle` file.
 ```gradle
 dependencies {
     implementation 'com.sendbird.sdk:sendbird-chat:4.14.0'
-    implementation 'com.sendbird.sdk:sendbird-desk-android-sdk:1.1.4'
+    implementation 'com.sendbird.sdk:sendbird-desk-android-sdk:1.1.7'
 }
 ```
 

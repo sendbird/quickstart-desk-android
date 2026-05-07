@@ -399,11 +399,6 @@ public class ChatActivity extends AppCompatActivity {
             @Override
             public void onMessageReceived(@NonNull BaseChannel baseChannel, @NonNull BaseMessage baseMessage) {
                 if (mChannelUrl != null && mChannelUrl.equals(baseChannel.getUrl())) {
-                    // If the first message comes (This must be welcome or away message).
-                    if (mListAdapter == null) {
-                        mListAdapter = new MessageListAdapter(ChatActivity.this);
-                        mListView.setAdapter(mListAdapter);
-                    }
                     mProgressBar.setVisibility(View.INVISIBLE);
                     mLayoutReply.setVisibility(View.VISIBLE);
 
